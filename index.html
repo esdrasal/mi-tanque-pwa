@@ -49,7 +49,7 @@
 <!-- HOME -->
 <div class="screen" id="screen-home">
   <div class="topbar">
-    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v0.9</span></h1>
+    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v1.0</span></h1>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-chart')" aria-label="Gráfico">📈</button>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-settings')" aria-label="Ajustes">⚙️</button>
   </div>
@@ -164,7 +164,52 @@
     <h2>Precio combustible</h2>
   </div>
   <div class="scroll">
+    <div id="chart-mileage" style="margin-bottom:16px"></div>
     <div id="chart-price"></div>
+  </div>
+</div>
+
+<!-- EDIT -->
+<div class="screen" id="screen-edit">
+  <div class="topbar">
+    <button class="back-btn" id="edit-back-btn">‹</button>
+    <h2>Editar registro</h2>
+  </div>
+  <div class="scroll">
+    <div class="form-group">
+      <div class="form-label">Fecha</div>
+      <input type="date" id="e-date" style="width:100%;font-size:16px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Odómetro (millas) <span class="req">*</span></div>
+      <input type="number" id="e-mileage" min="0" step="1" inputmode="numeric">
+    </div>
+    <div id="e-fuel-section">
+      <div class="form-group">
+        <div class="form-label">Gasolina cargada</div>
+        <div class="seg seg2">
+          <button class="seg-btn" id="e-btn-gal" onclick="setEditFuelMode('gallons')">Galones</button>
+          <button class="seg-btn" id="e-btn-usd" onclick="setEditFuelMode('dollars')">Dólares</button>
+        </div>
+        <input type="number" id="e-fuel" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Dinero pagado ($) <span class="req">*</span></div>
+        <input type="number" id="e-paid" min="0" step="0.01" inputmode="decimal">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Nivel del tanque</div>
+      <div id="edit-gauge"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Nota <span class="opt">opcional</span></div>
+      <input type="text" id="e-note" placeholder="ej. Shell Blvd Los Héroes">
+    </div>
+    <button class="save-btn" onclick="saveEdit()">Guardar cambios</button>
+    <div style="margin-top:12px">
+      <button class="del-btn" id="e-del-btn">🗑 Eliminar este registro</button>
+    </div>
   </div>
 </div>
 

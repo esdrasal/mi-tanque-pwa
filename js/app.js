@@ -17,7 +17,7 @@ function goTo(id){
   if(id==='screen-chart') initChart();
 }
 
-function initChart(){ renderPriceChart('chart-price'); }
+function initChart(){ renderMileageChart('chart-mileage'); renderPriceChart('chart-price'); }
 
 // ── Helpers ───────────────────────────────────────────────
 function getLastOdo(){
@@ -150,6 +150,93 @@ function renderHome(){
   }).join('');
 }
 
+// ── Edit ──────────────────────────────────────────────────
+let editId=null, editFuelMode='gallons', editGauge=null;
+
+function showEdit(id){
+  const e=state.entries.find(x=>x.id===id);
+  if(!e) return;
+  editId=id;
+
+  // Fecha: usar ts para pre-llenar el input date
+  const d=new Date(e.ts);
+  const yyyy=d.getFullYear();
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  document.getElementById('e-date').value=`${yyyy}-${mm}-${dd}`;
+
+  document.getElementById('e-mileage').value=e.mileage||'';
+
+  const fuelSec=document.getElementById('e-fuel-section');
+  if(e.type==='fuel'){
+    fuelSec.style.display='';
+    editFuelMode=e.fuelMode||'gallons';
+    setEditFuelMode(editFuelMode);
+    document.getElementById('e-fuel').value=e.fuel!=null?e.fuel:'';
+    document.getElementById('e-paid').value=e.paid||'';
+  } else {
+    fuelSec.style.display='none';
+  }
+
+  editGauge=createGauge('edit-gauge', e.level??0.5);
+  document.getElementById('e-note').value=e.note||'';
+  document.getElementById('e-del-btn').onclick=()=>deleteEntry(id);
+  // Back va a detail del mismo registro
+  document.getElementById('edit-back-btn').onclick=()=>showDetail(id);
+
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-edit').classList.add('active');
+}
+
+function setEditFuelMode(m){
+  editFuelMode=m;
+  document.getElementById('e-btn-gal').classList.toggle('active',m==='gallons');
+  document.getElementById('e-btn-usd').classList.toggle('active',m==='dollars');
+  document.getElementById('e-fuel').placeholder=m==='gallons'?'ej. 3.5 galones':'ej. 12.00';
+}
+
+function saveEdit(){
+  const e=state.entries.find(x=>x.id===editId);
+  if(!e) return;
+
+  const dateVal=document.getElementById('e-date').value;
+  const odo=parseFloat(document.getElementById('e-mileage').value);
+  if(!dateVal){ alert('Ingresa la fecha.'); return; }
+  if(isNaN(odo)||odo<=0){ alert('Ingresa el odómetro.'); return; }
+
+  if(e.type==='fuel'){
+    const paid=parseFloat(document.getElementById('e-paid').value);
+    if(isNaN(paid)||paid<=0){ alert('Ingresa el dinero pagado.'); return; }
+    const fuel=parseFloat(document.getElementById('e-fuel').value);
+    e.fuel=isNaN(fuel)?null:fuel;
+    e.fuelMode=editFuelMode;
+    e.paid=paid;
+  }
+
+  // Recalcular ts y fecha
+  const newDate=new Date(dateVal+'T12:00:00');
+  e.ts=newDate.getTime();
+  e.date=newDate.toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'});
+
+  // Recalcular trip: entrada anterior con odoValue (excluir self, ordenar por ts)
+  const prev=state.entries
+    .filter(x=>x.id!==editId&&x.odoValue&&x.ts<e.ts)
+    .sort((a,b)=>b.ts-a.ts)[0];
+  const prevOdo=prev?prev.odoValue:(state.setup?.odo||null);
+
+  e.mileage=odo;
+  e.odoValue=odo;
+  e.isOdo=true;
+  e.trip=(prevOdo&&odo>prevOdo)?(odo-prevOdo):null;
+  e.level=editGauge?editGauge.getVal():e.level;
+  e.note=document.getElementById('e-note').value.trim();
+
+  // Reordenar por ts descendente
+  state.entries.sort((a,b)=>b.ts-a.ts);
+  persist();
+  goTo('screen-home');
+}
+
 // ── Detail ────────────────────────────────────────────────
 function showDetail(id){
   const e=state.entries.find(x=>x.id===id);
@@ -175,7 +262,8 @@ function showDetail(id){
     <div class="dc wide"><div class="dl">Costo por distancia</div><div class="dv">${fmtCpp(e.paid,e.trip)}</div></div>`:''}
   </div>`;
   if(e.note) html+=`<div class="note-row">📍 ${e.note}</div>`;
-  html+=`<button class="del-btn" onclick="deleteEntry(${e.id})">🗑 Eliminar este registro</button>`;
+  html+=`<button class="save-btn" style="margin-top:8px" onclick="showEdit(${e.id})">✏️ Editar</button>`;
+  html+=`<button class="del-btn" style="margin-top:8px" onclick="deleteEntry(${e.id})">🗑 Eliminar este registro</button>`;
 
   document.getElementById('detail-content').innerHTML=html;
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
