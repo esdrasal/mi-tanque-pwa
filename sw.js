@@ -1,5 +1,13 @@
-const CACHE = 'mi-tanque-v6';
-const ASSETS = ['./index.html', './manifest.json'];
+const CACHE = 'mi-tanque-v7';
+const ASSETS = [
+  './index.html',
+  './manifest.json',
+  './css/app.css',
+  './js/storage.js',
+  './js/gauge.js',
+  './js/stats.js',
+  './js/app.js',
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
@@ -15,7 +23,6 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
-  if (e.request.url.includes('api.anthropic.com')) return;
   // Network first, fall back to cache
   e.respondWith(
     fetch(e.request).then(resp => {
