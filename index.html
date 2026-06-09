@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Tanque">
+<title>Mi Tanque</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#fff;--bg2:#f5f5f5;--bg3:#ebebeb;
+    --text:#111;--text2:#555;--text3:#999;
+    --border:#e0e0e0;--border2:#c8c8c8;
+    --accent:#111;--accent-fg:#fff;
+    --danger:#d32f2f;--danger-bg:#fdecea;
+    --info:#1565c0;--info-bg:#e3f0fb;
+    --success:#2e7d32;--success-bg:#e8f5e9;
+    --radius:10px;--radius-lg:14px;
+    --safe-top:env(safe-area-inset-top,0px);
+    --safe-bot:env(safe-area-inset-bottom,0px);
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#111;--bg2:#1c1c1e;--bg3:#2c2c2e;
+      --text:#f0f0f0;--text2:#aaa;--text3:#666;
+      --border:#2c2c2e;--border2:#3a3a3c;
+      --accent:#f0f0f0;--accent-fg:#111;
+      --danger:#ef5350;--danger-bg:#3b1111;
+      --info:#64b5f6;--info-bg:#0d2137;
+      --success:#66bb6a;--success-bg:#0d2b10;
+    }
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;overscroll-behavior:none}
+  .app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto}
+  .screen{display:none;flex-direction:column;flex:1;overflow:hidden}
+  .screen.active{display:flex}
+  .topbar{padding:calc(var(--safe-top) + 12px) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+  .topbar h1{font-size:20px;font-weight:600;color:var(--text);flex:1}
+  .topbar h2{font-size:18px;font-weight:600;color:var(--text);flex:1}
+  .scroll{flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(var(--safe-bot) + 80px)}
+  .back-btn{background:none;border:none;cursor:pointer;color:var(--text2);font-size:22px;padding:4px;display:flex;align-items:center;line-height:1}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .stat{background:var(--bg2);border-radius:var(--radius);padding:12px 14px}
+  .stat .lbl{font-size:12px;color:var(--text2);margin-bottom:3px}
+  .stat .val{font-size:22px;font-weight:600;color:var(--text);line-height:1.1}
+  .stat .unit{font-size:13px;font-weight:400;color:var(--text3)}
+  .fab{position:fixed;bottom:calc(var(--safe-bot) + 20px);right:20px;width:56px;height:56px;border-radius:28px;background:var(--accent);color:var(--accent-fg);border:none;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.25);z-index:10}
+  .fab:active{transform:scale(0.93)}
+  .sec-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+  .log-list{display:flex;flex-direction:column;gap:8px}
+  .log-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 14px;cursor:pointer;-webkit-user-select:none;user-select:none}
+  .log-item:active{background:var(--bg2)}
+  .log-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .log-date{font-size:13px;color:var(--text2)}
+  .log-station{font-size:13px;color:var(--text3);margin-top:1px}
+  .log-cost{font-size:17px;font-weight:600;color:var(--text)}
+  .log-metas{display:flex;gap:10px;margin-top:7px;flex-wrap:wrap}
+  .meta{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:3px}
+  .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .badge-full{background:var(--success-bg);color:var(--success)}
+  .badge-photo{background:var(--info-bg);color:var(--info)}
+  .empty{text-align:center;padding:60px 20px;color:var(--text3)}
+  .empty svg{display:block;margin:0 auto 14px;opacity:.35}
+  .empty p{font-size:15px}
+  .form-group{margin-bottom:16px}
+  .form-label{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
+  .req{color:var(--danger)}
+  .opt{font-size:11px;color:var(--text3);font-weight:400}
+  input[type=number],input[type=text]{width:100%;font-size:16px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none;-webkit-appearance:none}
+  input:focus{border-color:var(--accent)}
+  .seg{display:grid;gap:6px;margin-bottom:16px}
+  .seg2{grid-template-columns:1fr 1fr}
+  .seg3{grid-template-columns:1fr 1fr 1fr}
+  .seg-btn{padding:10px 6px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text2);font-size:14px;cursor:pointer;text-align:center;font-weight:500}
+  .seg-btn.active{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+  .photo-drop{border:1.5px dashed var(--border2);border-radius:var(--radius-lg);padding:24px 16px;text-align:center;cursor:pointer;background:var(--bg2)}
+  .photo-drop:active{background:var(--bg3)}
+  .photo-drop .icon{font-size:32px;margin-bottom:6px;display:block}
+  .photo-drop p{font-size:14px;color:var(--text2)}
+  .photo-drop small{font-size:12px;color:var(--text3);display:block;margin-top:3px}
+  #photo-input{display:none}
+  .photo-preview-wrap{position:relative;margin-bottom:8px}
+  .photo-preview{width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius);display:block}
+  .photo-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+  .ai-box{background:var(--info-bg);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--info);line-height:1.55}
+  .ai-box .ai-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;opacity:.8}
+  .spinner-wrap{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2)}
+  .spinner{width:18px;height:18px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--text);animation:spin .75s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .save-btn{width:100%;padding:15px;background:var(--accent);color:var(--accent-fg);border:none;border-radius:var(--radius-lg);font-size:16px;font-weight:600;cursor:pointer;margin-top:4px}
+  .save-btn:active{opacity:.85}
+  .save-btn:disabled{opacity:.35;cursor:not-allowed}
+  .detail-photo{width:100%;max-height:220px;object-fit:cover;border-radius:var(--radius-lg);margin-bottom:16px;display:block}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .detail-card{background:var(--bg2);border-radius:var(--radius);padding:11px 13px}
+  .detail-card .dl{font-size:11px;color:var(--text3);margin-bottom:2px}
+  .detail-card .dv{font-size:15px;font-weight:600;color:var(--text)}
+  .ai-detail{background:var(--info-bg);border-radius:var(--radius);padding:12px 14px;font-size:13px;color:var(--info);line-height:1.55;margin-bottom:12px}
+  .note-row{font-size:14px;color:var(--text2);margin-bottom:16px;padding:10px 12px;background:var(--bg2);border-radius:var(--radius)}
+  .del-btn{width:100%;padding:13px;background:none;border:1px solid var(--danger);color:var(--danger);border-radius:var(--radius-lg);font-size:15px;font-weight:500;cursor:pointer;margin-top:4px}
+  .del-btn:active{background:var(--danger-bg)}
+  .install-bar{display:none;background:var(--info-bg);color:var(--info);font-size:13px;padding:10px 16px;align-items:center;gap:10px;flex-shrink:0}
+  .install-bar button{margin-left:auto;background:var(--info);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .install-bar .dismiss{background:none;color:var(--info);border:none;cursor:pointer;font-size:18px;padding:0;margin-left:4px}
+  .ios-hint{display:none;text-align:center;font-size:12px;color:var(--text3);padding:8px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="install-bar" id="install-bar">
+    <span>📲 Instala esta app en tu cel</span>
+    <button id="install-btn">Instalar</button>
+    <button class="dismiss" id="install-dismiss">✕</button>
+  </div>
+  <div class="screen active" id="screen-home">
+    <div class="topbar"><h1>⛽ Mi Tanque</h1></div>
+    <div class="scroll">
+      <div class="stat-grid">
+        <div class="stat"><div class="lbl">Total gastado</div><div class="val" id="s-total">$0.00</div></div>
+        <div class="stat"><div class="lbl">Cargas</div><div class="val" id="s-count">0</div></div>
+        <div class="stat"><div class="lbl">Promedio/carga</div><div class="val" id="s-avg">$0.00</div></div>
+        <div class="stat"><div class="lbl">Último millaje</div><div class="val" id="s-miles"><span class="unit">—</span></div></div>
+      </div>
+      <div class="sec-title">Historial</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+    <button class="fab" id="fab" onclick="goTo('screen-form')" aria-label="Registrar carga">+</button>
+  </div>
+  <div class="screen" id="screen-form">
+    <div class="topbar">
+      <button class="back-btn" onclick="goTo('screen-home')" aria-label="Volver">‹</button>
+      <h2>Nueva carga</h2>
+    </div>
+    <div class="scroll">
+      <div class="form-group">
+        <div class="form-label">Millaje / trip <span class="req">*</span></div>
+        <input type="number" id="f-mileage" placeholder="ej. 250 (desde última carga)" min="0" step="0.1" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <div class="form-label">¿Cómo mides la gasolina? <span class="req">*</span></div>
+        <div class="seg seg2">
+          <button class="seg-btn active" id="btn-gal" onclick="setFuelMode('gallons')">Galones</button>
+          <button class="seg-btn" id="btn-usd-fuel" onclick="setFuelMode('dollars')">Dólares</button>
+        </div>
+        <input type="number" id="f-fuel" placeholder="ej. 3.5 galones" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Dinero pagado ($) <span class="req">*</span></div>
+        <input type="number" id="f-paid" placeholder="ej. 15.00" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <div class="form-label">¿Llenó el tanque? <span class="opt">opcional</span></div>
+        <div class="seg seg3">
+          <button class="seg-btn" id="btn-no" onclick="setFull('no')">No</button>
+          <button class="seg-btn active" id="btn-half" onclick="setFull('half')">Parcial</button>
+          <button class="seg-btn" id="btn-yes" onclick="setFull('full')">Full ✓</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Foto del tablero <span class="opt">opcional — Claude la analiza</span></div>
+        <div id="photo-zone">
+          <div class="photo-drop" onclick="document.getElementById('photo-input').click()">
+            <span class="icon">📷</span>
+            <p>Toca para tomar foto o elegir de galería</p>
+            <small>El odómetro y nivel de combustible se detectan solos</small>
+          </div>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" capture="environment">
+      </div>
+      <div class="ai-box" id="ai-box" style="display:none">
+        <div class="ai-lbl">✦ Claude analizó tu tablero</div>
+        <div id="ai-text"></div>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Gasolinera / nota <span class="opt">opcional</span></div>
+        <input type="text" id="f-note" placeholder="ej. Shell Blvd Los Héroes">
+      </div>
+      <button class="save-btn" onclick="saveEntry()">Guardar carga</button>
+    </div>
+  </div>
+  <div class="screen" id="screen-detail">
+    <div class="topbar">
+      <button class="back-btn" onclick="goTo('screen-home')" aria-label="Volver">‹</button>
+      <h2>Detalle de carga</h2>
+    </div>
+    <div class="scroll" id="detail-content"></div>
+  </div>
+</div>
+<script>
+const STORAGE_KEY='mi_tanque_v1';
+let entries=[];
+let fuelMode='gallons';
+let fullStatus='half';
+let photoB64=null;
+let photoMime='image/jpeg';
+let deferredPrompt=null;
+try{entries=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch(e){entries=[];}
+function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));}catch(e){}}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-bar').style.display='flex';});
+document.getElementById('install-btn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('install-bar').style.display='none';};
+document.getElementById('install-dismiss').onclick=()=>{document.getElementById('install-bar').style.display='none';};
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone;
+if(isIOS){const hint=document.createElement('div');hint.className='ios-hint';hint.style.display='block';hint.innerHTML='Para instalar: toca <b>Compartir</b> → <b>Agregar a pantalla de inicio</b>';document.querySelector('.app').appendChild(hint);}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='screen-home')renderHome();if(id==='screen-form')resetForm();}
+function setFuelMode(m){fuelMode=m;document.getElementById('btn-gal').classList.toggle('active',m==='gallons');document.getElementById('btn-usd-fuel').classList.toggle('active',m==='dollars');document.getElementById('f-fuel').placeholder=m==='gallons'?'ej. 3.5 galones':'ej. 12.00 (en combustible)';}
+function setFull(v){fullStatus=v;['no','half','full'].forEach(x=>document.getElementById('btn-'+x).classList.toggle('active',x===v));}
+function resetForm(){['f-mileage','f-fuel','f-paid','f-note'].forEach(id=>document.getElementById(id).value='');document.getElementById('ai-box').style.display='none';document.getElementById('photo-zone').innerHTML='<div class="photo-drop" onclick="document.getElementById(\'photo-input\').click()"><span class="icon">📷</span><p>Toca para tomar foto o elegir de galería</p><small>El odómetro y nivel de combustible se detectan solos</small></div>';document.getElementById('photo-input').value='';photoB64=null;photoMime='image/jpeg';fuelMode='gallons';fullStatus='half';setFuelMode('gallons');setFull('half');}
+document.getElementById('photo-input').addEventListener('change',async function(e){const file=e.target.files[0];if(!file)return;photoMime=file.type||'image/jpeg';const reader=new FileReader();reader.onload=async ev=>{const dataUrl=ev.target.result;photoB64=dataUrl.split(',')[1];document.getElementById('photo-zone').innerHTML='<div class="photo-preview-wrap"><img src="'+dataUrl+'" class="photo-preview" alt="Tablero"><button class="photo-remove" onclick="removePhoto()">✕</button></div>';await analyzePhoto(photoB64,photoMime);};reader.readAsDataURL(file);});
+function removePhoto(){photoB64=null;document.getElementById('photo-input').value='';document.getElementById('ai-box').style.display='none';document.getElementById('photo-zone').innerHTML='<div class="photo-drop" onclick="document.getElementById(\'photo-input\').click()"><span class="icon">📷</span><p>Toca para tomar foto o elegir de galería</p><small>El odómetro y nivel de combustible se detectan solos</small></div>';}
+async function analyzePhoto(b64,mime){const box=document.getElementById('ai-box');const txt=document.getElementById('ai-text');box.style.display='block';txt.innerHTML='<div class="spinner-wrap"><div class="spinner"></div>Analizando tablero…</div>';try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mime,data:b64}},{type:'text',text:'Analiza esta foto del tablero de un vehículo. Responde SOLO en JSON sin markdown:\n{"odometro":null_o_numero,"nivel":"vacío|cuarto|mitad|tres_cuartos|lleno|desconocido","full":true_o_false,"nota":"observación breve en español max 60 caracteres"}\n"full" es true solo si el indicador muestra lleno/full. Si no ves tablero o no puedes leer, pon null en odometro y "desconocido" en nivel.'}]}]}});const data=await resp.json();const raw=data.content?.find(b=>b.type==='text')?.text||'{}';let p;try{p=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){p={};}let parts=[];if(p.odometro){parts.push('<b>Odómetro:</b> '+Number(p.odometro).toLocaleString());const mf=document.getElementById('f-mileage');if(!mf.value)mf.value=p.odometro;}if(p.nivel&&p.nivel!=='desconocido')parts.push('<b>Nivel:</b> '+p.nivel);if(p.full===true)setFull('full');if(p.nota)parts.push(p.nota);txt.innerHTML=parts.length?parts.join(' &nbsp;·&nbsp; '):'Recibida. Completa los datos manualmente.';}catch(err){txt.innerHTML='No se pudo analizar. Completa los datos manualmente.';}}
+function saveEntry(){const mileage=parseFloat(document.getElementById('f-mileage').value);const fuel=parseFloat(document.getElementById('f-fuel').value);const paid=parseFloat(document.getElementById('f-paid').value);if(isNaN(mileage)||mileage<=0){alert('Ingresa el millaje o trip.');return;}if(isNaN(paid)||paid<=0){alert('Ingresa el dinero pagado.');return;}const entry={id:Date.now(),date:new Date().toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),ts:Date.now(),mileage,fuel:isNaN(fuel)?null:fuel,fuelMode,paid,fullStatus,note:document.getElementById('f-note').value.trim(),photo:photoB64?('data:'+photoMime+';base64,'+photoB64):null,aiNote:document.getElementById('ai-text').innerText||null};entries.unshift(entry);persist();goTo('screen-home');}
+function renderHome(){const total=entries.reduce((s,e)=>s+e.paid,0);const avg=entries.length?total/entries.length:0;const last=entries.length?entries[0].mileage:null;document.getElementById('s-total').textContent='$'+total.toFixed(2);document.getElementById('s-count').textContent=entries.length;document.getElementById('s-avg').textContent='$'+avg.toFixed(2);document.getElementById('s-miles').innerHTML=last?last.toLocaleString():'<span class="unit">—</span>';const list=document.getElementById('log-list');if(!entries.length){list.innerHTML='<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h2l1 2h13l1-3H6"/><path d="M7 17a1 1 0 100-2 1 1 0 000 2z"/><path d="M17 17a1 1 0 100-2 1 1 0 000 2z"/></svg><p>Sin registros aún.<br>Toca <b>+</b> para agregar tu primera carga.</p></div>';return;}list.innerHTML=entries.map(e=>{const fuelStr=e.fuel?(e.fuelMode==='gallons'?e.fuel+' gal':'$'+e.fuel.toFixed(2)+' combustible'):'';const fullBadge=e.fullStatus==='full'?'<span class="badge badge-full">Full</span>':'';const photoBadge=e.photo?'<span class="badge badge-photo">📷</span>':'';return'<div class="log-item" onclick="showDetail('+e.id+')"><div class="log-row"><div><div class="log-date">'+e.date+'</div>'+(e.note?'<div class="log-station">'+e.note+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="log-cost">$'+e.paid.toFixed(2)+'</div><div style="display:flex;gap:4px">'+fullBadge+photoBadge+'</div></div></div><div class="log-metas"><span class="meta">🛣 '+e.mileage.toLocaleString()+' mi/km</span>'+(fuelStr?'<span class="meta">⛽ '+fuelStr+'</span>':'')+'</div></div>';}).join('');}
+function showDetail(id){const e=entries.find(x=>x.id===id);if(!e)return;const fuelStr=e.fuel?(e.fuelMode==='gallons'?e.fuel+' galones':'$'+e.fuel.toFixed(2)+' en combustible'):'No registrado';const pricePer=(e.fuel&&e.fuelMode==='gallons'&&e.paid)?'$'+(e.paid/e.fuel).toFixed(3)+'/gal':'—';const fullMap={no:'No',half:'Parcial',full:'Sí, full ✓'};let html='';if(e.photo)html+='<img src="'+e.photo+'" class="detail-photo" alt="Tablero">';html+='<div class="detail-grid"><div class="detail-card"><div class="dl">Fecha</div><div class="dv">'+e.date+'</div></div><div class="detail-card"><div class="dl">Pagado</div><div class="dv">$'+e.paid.toFixed(2)+'</div></div><div class="detail-card"><div class="dl">Millaje/trip</div><div class="dv">'+e.mileage.toLocaleString()+'</div></div><div class="detail-card"><div class="dl">Gasolina</div><div class="dv">'+fuelStr+'</div></div><div class="detail-card"><div class="dl">Precio/galón</div><div class="dv">'+pricePer+'</div></div><div class="detail-card"><div class="dl">¿Full?</div><div class="dv">'+(fullMap[e.fullStatus]||'—')+'</div></div></div>';if(e.note)html+='<div class="note-row">📍 '+e.note+'</div>';if(e.aiNote&&e.aiNote.trim()&&!e.aiNote.includes('manualmente'))html+='<div class="ai-detail">✦ <b>Claude:</b> '+e.aiNote+'</div>';html+='<button class="del-btn" onclick="deleteEntry('+e.id+')">🗑 Eliminar este registro</button>';document.getElementById('detail-content').innerHTML=html;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-detail').classList.add('active');}
+function deleteEntry(id){if(!confirm('¿Seguro que quieres eliminar este registro?'))return;entries=entries.filter(e=>e.id!==id);persist();goTo('screen-home');}
+setFuelMode('gallons');setFull('half');renderHome();
+</script>
+</body>
+</html>
