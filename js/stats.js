@@ -12,7 +12,7 @@ function calcStats(){
   const es=state.entries;
   const fuelEntries=es.filter(e=>e.type==='fuel');
   const total=fuelEntries.reduce((s,e)=>s+e.paid,0);
-  const lastOdo=es.length?(es[0].odoValue||null):null;
+  const lastOdo=es.find(e=>e.odoValue)?.odoValue||null;
   const initOdo=state.setup?.odo||null;
   const totalGals=fuelEntries.filter(e=>e.fuel&&e.fuelMode==='gallons').reduce((s,e)=>s+e.fuel,0);
   const totalMiles=(lastOdo&&initOdo&&lastOdo>initOdo)?(lastOdo-initOdo):null;
