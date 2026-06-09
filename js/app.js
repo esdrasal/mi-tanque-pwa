@@ -17,7 +17,11 @@ function goTo(id){
   if(id==='screen-chart') initChart();
 }
 
-function initChart(){ renderMileageChart('chart-mileage'); renderPriceChart('chart-price'); }
+function initChart(){
+  renderMonthly('chart-monthly');
+  renderMileageChart('chart-mileage');
+  renderPriceChart('chart-price');
+}
 
 // ── Helpers ───────────────────────────────────────────────
 function getLastOdo(){

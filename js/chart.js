@@ -1,3 +1,109 @@
+// ── Monthly calc ─────────────────────────────────────────
+const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function calcMonthly() {
+  if (!state.entries.length) return [];
+  const sorted = state.entries.filter(e => e.ts).slice().sort((a,b) => a.ts - b.ts);
+  const first = new Date(sorted[0].ts), last = new Date(sorted[sorted.length-1].ts);
+
+  const buckets = [];
+  let y = first.getFullYear(), m = first.getMonth();
+  while (y < last.getFullYear() || (y === last.getFullYear() && m <= last.getMonth())) {
+    buckets.push({y, m}); m++; if(m>11){m=0;y++;}
+  }
+
+  let prevOdo = state.setup?.odo || null;
+  return buckets.map(({y,m}) => {
+    const start = new Date(y,m,1).getTime(), end = new Date(y,m+1,1).getTime();
+    const label = MONTH_NAMES[m]+' '+String(y).slice(2);
+
+    const monthEntries = sorted.filter(e => e.ts >= start && e.ts < end);
+    const monthFuel = monthEntries.filter(e => e.type==='fuel');
+    const paid = monthFuel.reduce((s,e) => s+(e.paid||0), 0);
+    const gals = monthFuel.filter(e => e.fuelMode==='gallons'&&e.fuel).reduce((s,e) => s+e.fuel, 0);
+
+    const lastOdoEntry = monthEntries.filter(e => e.odoValue).pop();
+    const lastOdo = lastOdoEntry?.odoValue || null;
+    const miles = (lastOdo && prevOdo && lastOdo > prevOdo) ? lastOdo - prevOdo : null;
+    const mpg = (miles && gals > 0) ? miles/gals : null;
+    if (lastOdo) prevOdo = lastOdo;
+
+    return {label, paid, gals, miles, mpg};
+  }).filter(m => m.paid > 0 || m.miles > 0);
+}
+
+// ── Monthly cards + chart ─────────────────────────────────
+function renderMonthly(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const months = calcMonthly();
+
+  if (!months.length) {
+    el.innerHTML = '<div class="empty" style="padding:32px 20px"><p>Sin datos mensuales aún.</p></div>';
+    return;
+  }
+
+  // Summary cards
+  const cards = months.map(mo => `
+    <div style="background:var(--bg2);border-radius:var(--radius);padding:11px 13px;min-width:110px;flex-shrink:0">
+      <div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px">${mo.label}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text)">$${mo.paid.toFixed(2)}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">${mo.miles ? mo.miles.toFixed(0)+' mi' : '—'}</div>
+      <div style="font-size:11px;color:var(--text2)">${mo.mpg ? mo.mpg.toFixed(1)+' mpg' : '—'}</div>
+    </div>`).join('');
+
+  // 3-line normalized chart (only months with all 3 metrics)
+  const full = months.filter(m => m.paid > 0 && m.miles && m.mpg);
+  let chartHtml = '';
+  if (full.length >= 2) {
+    const norm = vals => { const mn=Math.min(...vals), mx=Math.max(...vals), r=mx-mn||1; return vals.map(v=>(v-mn)/r); };
+    const pN = norm(full.map(m=>m.paid));
+    const miN = norm(full.map(m=>m.miles));
+    const mpN = norm(full.map(m=>m.mpg));
+
+    const W = Math.min((el.clientWidth||340), 480) - 32;
+    const H = 160, PAD = {top:14, right:12, bottom:30, left:12};
+    const cw = W - PAD.left - PAD.right, ch = H - PAD.top - PAD.bottom;
+    const n = full.length;
+    const px = i => PAD.left + (n===1 ? cw/2 : i/(n-1)*cw);
+    const py = v => PAD.top + (1-v)*ch;
+
+    const line = (vals, color) => {
+      const pts = vals.map((v,i) => `${px(i).toFixed(1)},${py(v).toFixed(1)}`).join(' ');
+      return `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+              ${vals.map((v,i) => `<circle cx="${px(i).toFixed(1)}" cy="${py(v).toFixed(1)}" r="3.5" fill="var(--bg)" stroke="${color}" stroke-width="2"/>`).join('')}`;
+    };
+
+    const xLabels = full.map((m,i) =>
+      `<text x="${px(i).toFixed(1)}" y="${(PAD.top+ch+14).toFixed(1)}" text-anchor="middle" font-size="9" fill="var(--text3)">${m.label}</text>`
+    ).join('');
+
+    chartHtml = `
+      <div style="background:var(--bg2);border-radius:var(--radius-lg);padding:14px 16px 10px;margin-bottom:10px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Comparativo mensual (normalizado)</div>
+        <svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible">
+          ${[0.25,0.5,0.75].map(v=>`<line x1="${PAD.left}" y1="${py(v).toFixed(1)}" x2="${PAD.left+cw}" y2="${py(v).toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`).join('')}
+          ${line(pN, 'var(--danger)')}
+          ${line(miN, 'var(--info)')}
+          ${line(mpN, 'var(--success)')}
+          ${xLabels}
+          <line x1="${PAD.left}" y1="${(PAD.top+ch).toFixed(1)}" x2="${PAD.left+cw}" y2="${(PAD.top+ch).toFixed(1)}" stroke="var(--border2)" stroke-width="1"/>
+        </svg>
+        <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--danger)">● Gasto $</span>
+          <span style="font-size:11px;color:var(--info)">● Millas</span>
+          <span style="font-size:11px;color:var(--success)">● Eficiencia mpg</span>
+          <span style="font-size:11px;color:var(--text3);margin-left:auto">Cada línea: min→max propio</span>
+        </div>
+      </div>`;
+  }
+
+  el.innerHTML = `
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Resumen mensual</div>
+    ${chartHtml}
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">${cards}</div>`;
+}
+
 function renderMileageChart(containerId) {
   const el = document.getElementById(containerId);
   if (!el) return;
