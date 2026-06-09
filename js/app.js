@@ -151,7 +151,7 @@ function importCSV(input){
 
 function csvDoReplace(){
   if(!_csvPending) return;
-  state.entries=_csvPending.entries;
+  state.entries=_csvPending.entries.sort((a,b)=>b.ts-a.ts);
   if(_csvPending.setupRow) state.setup={...state.setup,..._csvPending.setupRow};
   _csvPending=null;
   persist();
