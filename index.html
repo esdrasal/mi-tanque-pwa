@@ -53,7 +53,7 @@
     <button onclick="markOilChanged()" style="margin-left:auto;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;background:var(--accent);color:var(--accent-fg);white-space:nowrap">Cambié aceite</button>
   </div>
   <div class="topbar">
-    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v1.3</span></h1>
+    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v1.4</span></h1>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-chart')" aria-label="Gráfico">📈</button>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-settings')" aria-label="Ajustes">⚙️</button>
   </div>
@@ -177,6 +177,14 @@
       <div class="form-label">Importar CSV</div>
       <input type="file" id="import-file" accept=".csv" style="display:none" onchange="importCSV(this)">
       <label for="import-file" class="save-btn" style="display:block;text-align:center;cursor:pointer;background:var(--bg2);color:var(--text);border:1px solid var(--border2)">⬆️ Seleccionar archivo CSV</label>
+    </div>
+    <div id="csv-import-banner" style="display:none;flex-direction:column;gap:10px;background:var(--info-bg);border-radius:var(--radius);padding:14px;margin-bottom:10px">
+      <div style="font-size:13px;color:var(--info);font-weight:600">📄 <span id="csv-import-count"></span> — ¿qué deseas hacer?</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="csvDoReplace()" class="save-btn" style="flex:1;padding:10px;font-size:13px">Reemplazar todo</button>
+        <button onclick="csvDoMerge()" class="save-btn" style="flex:1;padding:10px;font-size:13px;background:var(--bg2);color:var(--text);border:1px solid var(--border2)">Agregar nuevos</button>
+      </div>
+      <button onclick="csvCancelImport()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-align:center">Cancelar</button>
     </div>
 
     <div style="margin-top:4px">

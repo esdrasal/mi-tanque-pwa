@@ -1,4 +1,4 @@
-const CACHE = 'mi-tanque-v14';
+const CACHE = 'mi-tanque-v15';
 const ASSETS = [
   './index.html',
   './manifest.json',

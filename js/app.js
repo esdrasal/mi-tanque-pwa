@@ -82,8 +82,11 @@ function exportCSV(){
 }
 
 // ── CSV Import ────────────────────────────────────────────
+let _csvPending = null;
+
 function importCSV(input){
   const file=input.files[0];
+  input.value='';
   if(!file) return;
   const reader=new FileReader();
   reader.onload=function(ev){
@@ -92,23 +95,21 @@ function importCSV(input){
 
     const cols=lines[0].split(',');
     const idx=k=>cols.indexOf(k);
-    const iType=idx('type'), iDate=idx('date'), iTs=idx('ts');
-    const iOdo=idx('odoValue'), iTrip=idx('trip'), iFuel=idx('fuel');
-    const iFuelMode=idx('fuelMode'), iPaid=idx('paid'), iLevel=idx('level'), iNote=idx('note');
+    const iType=idx('type'),iDate=idx('date'),iTs=idx('ts');
+    const iOdo=idx('odoValue'),iTrip=idx('trip'),iFuel=idx('fuel');
+    const iFuelMode=idx('fuelMode'),iPaid=idx('paid'),iLevel=idx('level'),iNote=idx('note');
 
     function parseRow(line){
-      const parts=[]; let cur='', inQ=false;
+      const parts=[]; let cur='',inQ=false;
       for(const ch of line){
-        if(ch==='"'){ inQ=!inQ; }
-        else if(ch===','&&!inQ){ parts.push(cur); cur=''; }
-        else { cur+=ch; }
+        if(ch==='"'){inQ=!inQ;}
+        else if(ch===','&&!inQ){parts.push(cur);cur='';}
+        else{cur+=ch;}
       }
-      parts.push(cur);
-      return parts;
+      parts.push(cur); return parts;
     }
 
-    const entries=[], setupRow=null;
-    let parseErr=false;
+    const entries=[]; let setupRow=null;
     for(let i=1;i<lines.length;i++){
       const p=parseRow(lines[i]);
       const type=p[iType]?.trim();
@@ -117,48 +118,62 @@ function importCSV(input){
         setupRow={
           odo:parseFloat(p[iTs])||parseFloat(p[iOdo])||null,
           capacity:parseFloat(p[iFuel])||null,
-          level:parseFloat(p[iLevel])??0.5
+          level:p[iLevel]!==''?parseFloat(p[iLevel]):0.5,
+          oilInterval:state.setup?.oilInterval||null,
+          oilOdo:state.setup?.oilOdo||null
         };
         continue;
       }
-      if(type!=='fuel'&&type!=='status'){ parseErr=true; continue; }
+      if(type!=='fuel'&&type!=='status') continue;
       const ts=parseInt(p[iTs]);
-      if(!ts||isNaN(ts)){ parseErr=true; continue; }
+      if(!ts||isNaN(ts)) continue;
       entries.push({
-        id:ts, type,
+        id:ts,type,
         date:p[iDate]?.trim()||new Date(ts).toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),
-        ts,
-        mileage:parseFloat(p[iOdo])||null,
-        odoValue:parseFloat(p[iOdo])||null,
-        trip:parseFloat(p[iTrip])||null,
-        fuel:parseFloat(p[iFuel])||null,
-        fuelMode:p[iFuelMode]?.trim()||'gallons',
-        paid:parseFloat(p[iPaid])||null,
+        ts,mileage:parseFloat(p[iOdo])||null,odoValue:parseFloat(p[iOdo])||null,
+        trip:parseFloat(p[iTrip])||null,fuel:parseFloat(p[iFuel])||null,
+        fuelMode:p[iFuelMode]?.trim()||'gallons',paid:parseFloat(p[iPaid])||null,
         level:p[iLevel]!==''?parseFloat(p[iLevel]):null,
-        note:p[iNote]?.trim()||'',
-        isOdo:true
+        note:p[iNote]?.trim()||'',isOdo:true
       });
     }
 
-    const mode=state.entries.length
-      ? confirm('¿Reemplazar todos los datos actuales con el CSV?\n\nOK = Reemplazar\nCancelar = Agregar a los existentes')
-      : true;
+    if(!entries.length&&!setupRow){ alert('No se encontraron registros válidos en el CSV.'); return; }
 
-    if(mode){
-      state.entries=entries;
-      if(setupRow) state.setup=setupRow;
-    } else {
-      const existingTs=new Set(state.entries.map(e=>e.ts));
-      entries.forEach(e=>{ if(!existingTs.has(e.ts)) state.entries.push(e); });
-      state.entries.sort((a,b)=>b.ts-a.ts);
-    }
-
-    persist();
-    input.value='';
-    if(parseErr) alert('Importación completada con algunas filas ignoradas (tipo desconocido).');
-    goTo('screen-home');
+    _csvPending={entries,setupRow};
+    const banner=document.getElementById('csv-import-banner');
+    document.getElementById('csv-import-count').textContent=
+      `${entries.length} registro${entries.length!==1?'s':''} encontrado${entries.length!==1?'s':''}`;
+    banner.style.display='flex';
   };
   reader.readAsText(file);
+}
+
+function csvDoReplace(){
+  if(!_csvPending) return;
+  state.entries=_csvPending.entries;
+  if(_csvPending.setupRow) state.setup={...state.setup,..._csvPending.setupRow};
+  _csvPending=null;
+  persist();
+  document.getElementById('csv-import-banner').style.display='none';
+  goTo('screen-home');
+}
+
+function csvDoMerge(){
+  if(!_csvPending) return;
+  const existingTs=new Set(state.entries.map(e=>e.ts));
+  let added=0;
+  _csvPending.entries.forEach(e=>{ if(!existingTs.has(e.ts)){state.entries.push(e);added++;} });
+  state.entries.sort((a,b)=>b.ts-a.ts);
+  _csvPending=null;
+  persist();
+  document.getElementById('csv-import-banner').style.display='none';
+  goTo('screen-home');
+}
+
+function csvCancelImport(){
+  _csvPending=null;
+  document.getElementById('csv-import-banner').style.display='none';
 }
 
 // ── Form: Carga ───────────────────────────────────────────
