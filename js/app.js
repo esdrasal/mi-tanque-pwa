@@ -15,6 +15,7 @@ function goTo(id){
   if(id==='screen-status') initStatus();
   if(id==='screen-settings') initSettings();
   if(id==='screen-chart') initChart();
+  if(id==='screen-trip') initTrip();
 }
 
 function initChart(){
@@ -59,13 +60,14 @@ function resetAll(){ if(!confirm('¿Borrar todos los datos?')) return; state={en
 
 // ── CSV Export ────────────────────────────────────────────
 function exportCSV(){
-  const header='type,date,ts,odoValue,trip,fuel,fuelMode,paid,level,note';
+  const header='type,date,ts,odoValue,trip,fuel,fuelMode,paid,level,note,oilInterval,oilOdo';
   const esc=v=>v==null?'':String(v).includes(',')? '"'+String(v).replace(/"/g,'""')+'"' :String(v);
   const rows=[header];
   if(state.setup){
     rows.push(['setup',
       '', state.setup.odo||'', state.setup.odo||'', '',
-      state.setup.capacity||'', '', '', state.setup.level??'', ''
+      state.setup.capacity||'', '', '', state.setup.level??'', '',
+      state.setup.oilInterval||'', state.setup.oilOdo||''
     ].map(esc).join(','));
   }
   state.entries.slice().sort((a,b)=>a.ts-b.ts).forEach(e=>{
@@ -115,12 +117,13 @@ function importCSV(input){
       const type=p[iType]?.trim();
       if(!type) continue;
       if(type==='setup'){
+        const iOilInterval=idx('oilInterval'), iOilOdo=idx('oilOdo');
         setupRow={
           odo:parseFloat(p[iTs])||parseFloat(p[iOdo])||null,
           capacity:parseFloat(p[iFuel])||null,
           level:p[iLevel]!==''?parseFloat(p[iLevel]):0.5,
-          oilInterval:state.setup?.oilInterval||null,
-          oilOdo:state.setup?.oilOdo||null
+          oilInterval:(iOilInterval>=0&&p[iOilInterval])?parseFloat(p[iOilInterval])||null:state.setup?.oilInterval||null,
+          oilOdo:(iOilOdo>=0&&p[iOilOdo])?parseFloat(p[iOilOdo])||null:state.setup?.oilOdo||null
         };
         continue;
       }
@@ -230,6 +233,53 @@ function saveStatus(){
     note:document.getElementById('st-note').value.trim()
   });
   persist(); goTo('screen-home');
+}
+
+// ── Trip calculator ───────────────────────────────────────
+let tripUnit='mi';
+
+function initTrip(){
+  document.getElementById('trip-dist').value='';
+  document.getElementById('trip-result').style.display='none';
+  document.getElementById('trip-no-data').style.display='none';
+  setTripUnit('mi');
+}
+
+function setTripUnit(u){
+  tripUnit=u;
+  document.getElementById('trip-btn-mi').classList.toggle('active',u==='mi');
+  document.getElementById('trip-btn-km').classList.toggle('active',u==='km');
+  calcTrip();
+}
+
+function calcTrip(){
+  const raw=parseFloat(document.getElementById('trip-dist').value);
+  const resultEl=document.getElementById('trip-result');
+  const noDataEl=document.getElementById('trip-no-data');
+  const msgEl=document.getElementById('trip-no-data-msg');
+
+  if(!raw||raw<=0){ resultEl.style.display='none'; noDataEl.style.display='none'; return; }
+
+  const {mpg}=calcStats();
+  const fuelEntries=state.entries.filter(e=>e.type==='fuel'&&e.fuelMode==='gallons'&&e.fuel>0&&e.paid>0);
+  const lastFuel=fuelEntries[0];
+  const ppg=lastFuel?(lastFuel.paid/lastFuel.fuel):null;
+
+  if(!mpg&&!ppg){
+    noDataEl.style.display='block'; resultEl.style.display='none';
+    msgEl.textContent='Necesitas al menos 2 cargas con odómetro para calcular.';
+    return;
+  }
+
+  const distMi=tripUnit==='mi'?raw:raw/MI2KM;
+  const gals=mpg?distMi/mpg:null;
+  const cost=(gals&&ppg)?gals*ppg:null;
+
+  resultEl.style.display='block'; noDataEl.style.display='none';
+  document.getElementById('tr-gal').textContent=gals?gals.toFixed(2)+' gal':'— (sin eficiencia aún)';
+  document.getElementById('tr-cost').textContent=cost?'$'+cost.toFixed(2):'— (sin precio reciente)';
+  document.getElementById('tr-mpg').textContent=mpg?fmtMpg(mpg):'—';
+  document.getElementById('tr-ppg').textContent=ppg?'$'+ppg.toFixed(3)+'/gal':'—';
 }
 
 // ── Oil alert ─────────────────────────────────────────────
