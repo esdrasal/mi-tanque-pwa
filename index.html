@@ -49,7 +49,7 @@
 <!-- HOME -->
 <div class="screen" id="screen-home">
   <div class="topbar">
-    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v0.8</span></h1>
+    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v0.9</span></h1>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-chart')" aria-label="Gráfico">📈</button>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-settings')" aria-label="Ajustes">⚙️</button>
   </div>
@@ -85,9 +85,8 @@
   </div>
   <div class="scroll">
     <div class="form-group">
-      <div class="form-label">Odómetro o trip (millas) <span class="req">*</span></div>
-      <input type="number" id="f-mileage" placeholder="ej. 45480 ó 250" min="0" step="0.1" inputmode="decimal">
-      <div class="hint" id="mileage-hint">≥ 1000 → odómetro &nbsp;|&nbsp; &lt; 1000 → trip</div>
+      <div class="form-label">Odómetro (millas) <span class="req">*</span></div>
+      <input type="number" id="f-mileage" placeholder="ej. 45480" min="0" step="1" inputmode="numeric">
     </div>
     <div class="form-group">
       <div class="form-label">Gasolina cargada <span class="req">*</span></div>
@@ -121,9 +120,8 @@
   </div>
   <div class="scroll">
     <div class="form-group">
-      <div class="form-label">Odómetro o trip (millas) <span class="req">*</span></div>
-      <input type="number" id="st-mileage" placeholder="ej. 45480 ó 250" min="0" step="0.1" inputmode="decimal">
-      <div class="hint" id="st-mileage-hint">≥ 1000 → odómetro &nbsp;|&nbsp; &lt; 1000 → trip</div>
+      <div class="form-label">Odómetro (millas) <span class="req">*</span></div>
+      <input type="number" id="st-mileage" placeholder="ej. 45480" min="0" step="1" inputmode="numeric">
     </div>
     <div class="form-group">
       <div class="form-label">Nivel actual del tanque</div>

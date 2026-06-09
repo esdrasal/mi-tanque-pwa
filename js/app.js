@@ -24,29 +24,6 @@ function getLastOdo(){
   const e=state.entries.find(e=>e.odoValue);
   return e?e.odoValue:(state.setup?.odo||null);
 }
-function setupMileageHint(inputId, hintId){
-  document.getElementById(inputId).addEventListener('input',function(){
-    const v=parseFloat(this.value);
-    const hint=document.getElementById(hintId);
-    if(!v){ hint.textContent='≥ 1000 → odómetro | < 1000 → trip'; hint.className='hint'; return; }
-    if(v>=1000){
-      const prev=getLastOdo();
-      const trip=prev&&v>prev?fmtDistShort(v-prev):null;
-      hint.textContent='📍 Odómetro'+(trip?' · Trip estimado: '+trip:'');
-      hint.className='hint ok';
-    } else {
-      hint.textContent='🛣 Trip: '+fmtDistShort(v);
-      hint.className='hint ok';
-    }
-  });
-}
-function parseEntry(raw){
-  const isOdo=raw>=1000;
-  let trip=null, odoValue=null;
-  if(isOdo){ odoValue=raw; const prev=getLastOdo(); if(prev&&raw>prev) trip=raw-prev; }
-  else { trip=raw; const prev=getLastOdo(); if(prev) odoValue=prev+raw; }
-  return{isOdo,trip,odoValue};
-}
 
 // ── Setup (primera vez) ───────────────────────────────────
 let setupGauge=null;
@@ -74,8 +51,6 @@ let fuelMode='gallons';
 let formGauge=null;
 function initForm(){
   ['f-mileage','f-fuel','f-paid','f-note'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('mileage-hint').textContent='≥ 1000 → odómetro | < 1000 → trip';
-  document.getElementById('mileage-hint').className='hint';
   fuelMode='gallons'; setFuelMode('gallons');
   formGauge=createGauge('form-gauge',0.75);
 }
@@ -86,16 +61,18 @@ function setFuelMode(m){
   document.getElementById('f-fuel').placeholder=m==='gallons'?'ej. 3.5 galones':'ej. 12.00 (en combustible)';
 }
 function saveEntry(){
-  const raw=parseFloat(document.getElementById('f-mileage').value);
+  const odo=parseFloat(document.getElementById('f-mileage').value);
   const fuel=parseFloat(document.getElementById('f-fuel').value);
   const paid=parseFloat(document.getElementById('f-paid').value);
-  if(isNaN(raw)||raw<=0){ alert('Ingresa el odómetro o trip.'); return; }
+  if(isNaN(odo)||odo<=0){ alert('Ingresa el odómetro.'); return; }
   if(isNaN(paid)||paid<=0){ alert('Ingresa el dinero pagado.'); return; }
-  const{isOdo,trip,odoValue}=parseEntry(raw);
+  const prev=getLastOdo();
+  if(prev&&odo<=prev){ alert('El odómetro debe ser mayor al registro anterior ('+prev.toLocaleString()+' mi).'); return; }
+  const trip=(prev&&odo>prev)?(odo-prev):null;
   state.entries.unshift({
     id:Date.now(), type:'fuel',
     date:new Date().toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),
-    ts:Date.now(), mileage:raw, isOdo, trip, odoValue,
+    ts:Date.now(), mileage:odo, isOdo:true, trip, odoValue:odo,
     fuel:isNaN(fuel)?null:fuel, fuelMode, paid,
     level:formGauge?formGauge.getVal():null,
     note:document.getElementById('f-note').value.trim()
@@ -107,18 +84,18 @@ function saveEntry(){
 let statusGauge=null;
 function initStatus(){
   ['st-mileage','st-note'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('st-mileage-hint').textContent='≥ 1000 → odómetro | < 1000 → trip';
-  document.getElementById('st-mileage-hint').className='hint';
   statusGauge=createGauge('status-gauge', state.setup?.level??0.5);
 }
 function saveStatus(){
-  const raw=parseFloat(document.getElementById('st-mileage').value);
-  if(isNaN(raw)||raw<=0){ alert('Ingresa el odómetro o trip.'); return; }
-  const{isOdo,trip,odoValue}=parseEntry(raw);
+  const odo=parseFloat(document.getElementById('st-mileage').value);
+  if(isNaN(odo)||odo<=0){ alert('Ingresa el odómetro.'); return; }
+  const prev=getLastOdo();
+  if(prev&&odo<=prev){ alert('El odómetro debe ser mayor al registro anterior ('+prev.toLocaleString()+' mi).'); return; }
+  const trip=(prev&&odo>prev)?(odo-prev):null;
   state.entries.unshift({
     id:Date.now(), type:'status',
     date:new Date().toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),
-    ts:Date.now(), mileage:raw, isOdo, trip, odoValue,
+    ts:Date.now(), mileage:odo, isOdo:true, trip, odoValue:odo,
     level:statusGauge?statusGauge.getVal():null,
     note:document.getElementById('st-note').value.trim()
   });
@@ -188,8 +165,8 @@ function showDetail(id){
   <div class="detail-grid">
     <div class="dc"><div class="dl">Fecha</div><div class="dv">${e.date}</div></div>
     ${isFuel?`<div class="dc"><div class="dl">Pagado</div><div class="dv">$${e.paid.toFixed(2)}</div></div>`:'<div class="dc"><div class="dl">Nivel</div><div class="dv">'+levelStr+'</div></div>'}
-    <div class="dc wide"><div class="dl">${e.isOdo?'Odómetro':'Trip ingresado'}</div><div class="dv">${fmtDist(e.mileage)}</div></div>
-    <div class="dc wide"><div class="dl">Trip calculado</div><div class="dv">${e.trip?fmtDist(e.trip):'—'}</div></div>
+    <div class="dc wide"><div class="dl">Odómetro</div><div class="dv">${fmtDist(e.mileage)}</div></div>
+    <div class="dc wide"><div class="dl">Trip</div><div class="dv">${e.trip?fmtDist(e.trip):'—'}</div></div>
     ${isFuel?`
     <div class="dc"><div class="dl">Gasolina</div><div class="dv">${fuelStr}</div></div>
     <div class="dc"><div class="dl">Nivel tras carga</div><div class="dv">${levelStr}</div></div>
@@ -212,8 +189,5 @@ function deleteEntry(id){
 }
 
 // ── Init ──────────────────────────────────────────────────
-setupMileageHint('f-mileage','mileage-hint');
-setupMileageHint('st-mileage','st-mileage-hint');
-
 if(!state.setup){ initSetup(); goTo('screen-setup'); }
 else { goTo('screen-home'); }
