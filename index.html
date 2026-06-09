@@ -530,22 +530,31 @@ function calcStats(){
   const es=state.entries;
   const fuelEntries=es.filter(e=>e.type==='fuel');
   const total=fuelEntries.reduce((s,e)=>s+e.paid,0);
-  const mpgArr=fuelEntries.filter(e=>e.trip&&e.fuel&&e.fuelMode==='gallons');
-  const mpg=mpgArr.length?mpgArr.reduce((s,e)=>s+e.trip/e.fuel,0)/mpgArr.length:null;
-  const mpdArr=fuelEntries.filter(e=>e.trip&&e.paid);
-  const mpd=mpdArr.length?mpdArr.reduce((s,e)=>s+e.trip/e.paid,0)/mpdArr.length:null;
   const lastOdo=es.length?(es[0].odoValue||null):null;
-  return{total,mpg,mpd,count:fuelEntries.length,lastOdo};
+  const initOdo=state.setup?.odo||null;
+  // Metodo acumulado: (odometro_actual - odometro_inicial) / total_galones
+  const totalGals=fuelEntries.filter(e=>e.fuel&&e.fuelMode==='gallons').reduce((s,e)=>s+e.fuel,0);
+  const totalMiles=(lastOdo&&initOdo&&lastOdo>initOdo)?(lastOdo-initOdo):null;
+  const mpg=(totalMiles&&totalGals>0)?(totalMiles/totalGals):null;
+  const mpd=(totalMiles&&total>0)?(totalMiles/total):null;
+  return{total,mpg,mpd,count:fuelEntries.length,lastOdo,totalGals,totalMiles};
 }
 
 // ── Home ──────────────────────────────────────────────────
 function renderHome(){
-  const{total,mpg,mpd,count,lastOdo}=calcStats();
+  const{total,mpg,mpd,count,lastOdo,totalGals,totalMiles}=calcStats();
   document.getElementById('s-total').textContent='$'+total.toFixed(2);
   document.getElementById('s-count').textContent=count;
   document.getElementById('s-odo').textContent=fmtOdo(lastOdo||state.setup?.odo);
-  document.getElementById('s-mpg').textContent=fmtMpg(mpg);
-  document.getElementById('s-mpd').textContent=fmtMpd(mpd);
+  // Eficiencia acumulada con detalle
+  const mpgEl=document.getElementById('s-mpg');
+  const mpdEl=document.getElementById('s-mpd');
+  if(mpg){
+    mpgEl.innerHTML=fmtMpg(mpg)+'<div style="font-size:11px;color:var(--text3);margin-top:2px">'+(totalMiles?totalMiles.toFixed(0)+' mi / '+totalGals.toFixed(1)+' gal acumulados':'')+'</div>';
+  } else {
+    mpgEl.textContent='— (necesita 2+ cargas con odómetro)';
+  }
+  mpdEl.textContent=fmtMpd(mpd);
 
   const list=document.getElementById('log-list');
   if(!state.entries.length){
@@ -600,7 +609,7 @@ function showDetail(id){
     ${isFuel?`
     <div class="dc"><div class="dl">Gasolina</div><div class="dv">${fuelStr}</div></div>
     <div class="dc"><div class="dl">Nivel tras carga</div><div class="dv">${levelStr}</div></div>
-    <div class="dc wide"><div class="dl">Eficiencia</div><div class="dv">${fmtMpg(mpgVal)}</div></div>
+    <div class="dc wide"><div class="dl">Eficiencia este viaje (estimado)</div><div class="dv">${fmtMpg(mpgVal)}</div></div>
     <div class="dc wide"><div class="dl">Rendimiento</div><div class="dv">${fmtMpd(mpdVal)}</div></div>
     <div class="dc wide"><div class="dl">Costo por distancia</div><div class="dv">${fmtCpp(e.paid,e.trip)}</div></div>`:''}
   </div>`;
