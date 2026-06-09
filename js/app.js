@@ -40,12 +40,19 @@ function saveSetup(){
 }
 
 // ── Settings ──────────────────────────────────────────────
-function initSettings(){ document.getElementById('set-odo').value=state.setup?.odo||''; document.getElementById('set-cap').value=state.setup?.capacity||''; }
+function initSettings(){
+  document.getElementById('set-odo').value=state.setup?.odo||'';
+  document.getElementById('set-cap').value=state.setup?.capacity||'';
+  document.getElementById('set-oil-interval').value=state.setup?.oilInterval||'';
+  document.getElementById('set-oil-odo').value=state.setup?.oilOdo||'';
+}
 function saveSettings(){
   if(!state.setup) state.setup={};
   const odo=parseFloat(document.getElementById('set-odo').value);
   if(odo) state.setup.odo=odo;
   state.setup.capacity=parseFloat(document.getElementById('set-cap').value)||null;
+  state.setup.oilInterval=parseFloat(document.getElementById('set-oil-interval').value)||null;
+  state.setup.oilOdo=parseFloat(document.getElementById('set-oil-odo').value)||null;
   persist(); alert('Guardado.'); goTo('screen-home');
 }
 function resetAll(){ if(!confirm('¿Borrar todos los datos?')) return; state={entries:[],setup:null}; persist(); location.reload(); }
@@ -210,6 +217,40 @@ function saveStatus(){
   persist(); goTo('screen-home');
 }
 
+// ── Oil alert ─────────────────────────────────────────────
+function renderOilAlert(currentOdo){
+  const interval=state.setup?.oilInterval;
+  const oilOdo=state.setup?.oilOdo;
+  const alertEl=document.getElementById('oil-alert');
+  const textEl=document.getElementById('oil-alert-text');
+  if(!interval||!oilOdo||!currentOdo){ alertEl.style.display='none'; return; }
+  const nextChange=oilOdo+interval;
+  const remaining=nextChange-currentOdo;
+  const warnAt=Math.min(500, interval*0.1);
+  if(remaining<=0){
+    alertEl.style.display='flex';
+    alertEl.style.background='var(--danger-bg)';
+    alertEl.style.color='var(--danger)';
+    textEl.textContent=`🔧 Cambio de aceite vencido — ${Math.abs(remaining).toLocaleString()} mi pasadas`;
+  } else if(remaining<=warnAt){
+    alertEl.style.display='flex';
+    alertEl.style.background='#fff8e1';
+    alertEl.style.color='#b45309';
+    textEl.textContent=`🔧 Cambio de aceite en ${remaining.toLocaleString()} mi`;
+  } else {
+    alertEl.style.display='none';
+  }
+}
+
+function markOilChanged(){
+  const currentOdo=calcStats().lastOdo;
+  if(!currentOdo){ alert('No hay odómetro registrado aún.'); return; }
+  if(!state.setup) state.setup={};
+  state.setup.oilOdo=currentOdo;
+  persist();
+  renderOilAlert(currentOdo);
+}
+
 // ── Home ──────────────────────────────────────────────────
 function renderHome(){
   const{total,mpg,mpd,count,lastOdo,totalGals,totalMiles}=calcStats();
@@ -224,6 +265,7 @@ function renderHome(){
     mpgEl.textContent='— (necesita 2+ cargas con odómetro)';
   }
   mpdEl.textContent=fmtMpd(mpd);
+  renderOilAlert(lastOdo);
 
   const list=document.getElementById('log-list');
   if(!state.entries.length){
