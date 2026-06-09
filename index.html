@@ -11,214 +11,619 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#fff;--bg2:#f5f5f5;--bg3:#ebebeb;
+  --text:#111;--text2:#555;--text3:#999;
+  --border:#e0e0e0;--border2:#c8c8c8;
+  --accent:#111;--accent-fg:#fff;
+  --danger:#d32f2f;--danger-bg:#fdecea;
+  --info:#1565c0;--info-bg:#e3f0fb;
+  --success:#2e7d32;--success-bg:#e8f5e9;
+  --radius:10px;--radius-lg:14px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+@media(prefers-color-scheme:dark){
   :root{
-    --bg:#fff;--bg2:#f5f5f5;--bg3:#ebebeb;
-    --text:#111;--text2:#555;--text3:#999;
-    --border:#e0e0e0;--border2:#c8c8c8;
-    --accent:#111;--accent-fg:#fff;
-    --danger:#d32f2f;--danger-bg:#fdecea;
-    --info:#1565c0;--info-bg:#e3f0fb;
-    --success:#2e7d32;--success-bg:#e8f5e9;
-    --radius:10px;--radius-lg:14px;
-    --safe-top:env(safe-area-inset-top,0px);
-    --safe-bot:env(safe-area-inset-bottom,0px);
+    --bg:#111;--bg2:#1c1c1e;--bg3:#2c2c2e;
+    --text:#f0f0f0;--text2:#aaa;--text3:#666;
+    --border:#2c2c2e;--border2:#3a3a3c;
+    --accent:#f0f0f0;--accent-fg:#111;
+    --danger:#ef5350;--danger-bg:#3b1111;
+    --info:#64b5f6;--info-bg:#0d2137;
+    --success:#66bb6a;--success-bg:#0d2b10;
   }
-  @media(prefers-color-scheme:dark){
-    :root{
-      --bg:#111;--bg2:#1c1c1e;--bg3:#2c2c2e;
-      --text:#f0f0f0;--text2:#aaa;--text3:#666;
-      --border:#2c2c2e;--border2:#3a3a3c;
-      --accent:#f0f0f0;--accent-fg:#111;
-      --danger:#ef5350;--danger-bg:#3b1111;
-      --info:#64b5f6;--info-bg:#0d2137;
-      --success:#66bb6a;--success-bg:#0d2b10;
-    }
-  }
-  html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;overscroll-behavior:none}
-  .app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto}
-  .screen{display:none;flex-direction:column;flex:1;overflow:hidden}
-  .screen.active{display:flex}
-  .topbar{padding:calc(var(--safe-top) + 12px) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
-  .topbar h1{font-size:20px;font-weight:600;color:var(--text);flex:1}
-  .topbar h2{font-size:18px;font-weight:600;color:var(--text);flex:1}
-  .scroll{flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(var(--safe-bot) + 80px)}
-  .back-btn{background:none;border:none;cursor:pointer;color:var(--text2);font-size:22px;padding:4px;display:flex;align-items:center;line-height:1}
-  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-  .stat{background:var(--bg2);border-radius:var(--radius);padding:12px 14px}
-  .stat .lbl{font-size:12px;color:var(--text2);margin-bottom:3px}
-  .stat .val{font-size:22px;font-weight:600;color:var(--text);line-height:1.1}
-  .stat .unit{font-size:13px;font-weight:400;color:var(--text3)}
-  .fab{position:fixed;bottom:calc(var(--safe-bot) + 20px);right:20px;width:56px;height:56px;border-radius:28px;background:var(--accent);color:var(--accent-fg);border:none;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.25);z-index:10}
-  .fab:active{transform:scale(0.93)}
-  .sec-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
-  .log-list{display:flex;flex-direction:column;gap:8px}
-  .log-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 14px;cursor:pointer;-webkit-user-select:none;user-select:none}
-  .log-item:active{background:var(--bg2)}
-  .log-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-  .log-date{font-size:13px;color:var(--text2)}
-  .log-station{font-size:13px;color:var(--text3);margin-top:1px}
-  .log-cost{font-size:17px;font-weight:600;color:var(--text)}
-  .log-metas{display:flex;gap:10px;margin-top:7px;flex-wrap:wrap}
-  .meta{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:3px}
-  .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
-  .badge-full{background:var(--success-bg);color:var(--success)}
-  .badge-photo{background:var(--info-bg);color:var(--info)}
-  .empty{text-align:center;padding:60px 20px;color:var(--text3)}
-  .empty svg{display:block;margin:0 auto 14px;opacity:.35}
-  .empty p{font-size:15px}
-  .form-group{margin-bottom:16px}
-  .form-label{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
-  .req{color:var(--danger)}
-  .opt{font-size:11px;color:var(--text3);font-weight:400}
-  input[type=number],input[type=text]{width:100%;font-size:16px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none;-webkit-appearance:none}
-  input:focus{border-color:var(--accent)}
-  .seg{display:grid;gap:6px;margin-bottom:16px}
-  .seg2{grid-template-columns:1fr 1fr}
-  .seg3{grid-template-columns:1fr 1fr 1fr}
-  .seg-btn{padding:10px 6px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text2);font-size:14px;cursor:pointer;text-align:center;font-weight:500}
-  .seg-btn.active{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-  .photo-drop{border:1.5px dashed var(--border2);border-radius:var(--radius-lg);padding:24px 16px;text-align:center;cursor:pointer;background:var(--bg2)}
-  .photo-drop:active{background:var(--bg3)}
-  .photo-drop .icon{font-size:32px;margin-bottom:6px;display:block}
-  .photo-drop p{font-size:14px;color:var(--text2)}
-  .photo-drop small{font-size:12px;color:var(--text3);display:block;margin-top:3px}
-  #photo-input{display:none}
-  .photo-preview-wrap{position:relative;margin-bottom:8px}
-  .photo-preview{width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius);display:block}
-  .photo-remove{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:28px;height:28px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
-  .ai-box{background:var(--info-bg);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--info);line-height:1.55}
-  .ai-box .ai-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;opacity:.8}
-  .spinner-wrap{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text2)}
-  .spinner{width:18px;height:18px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--text);animation:spin .75s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .save-btn{width:100%;padding:15px;background:var(--accent);color:var(--accent-fg);border:none;border-radius:var(--radius-lg);font-size:16px;font-weight:600;cursor:pointer;margin-top:4px}
-  .save-btn:active{opacity:.85}
-  .save-btn:disabled{opacity:.35;cursor:not-allowed}
-  .detail-photo{width:100%;max-height:220px;object-fit:cover;border-radius:var(--radius-lg);margin-bottom:16px;display:block}
-  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-  .detail-card{background:var(--bg2);border-radius:var(--radius);padding:11px 13px}
-  .detail-card .dl{font-size:11px;color:var(--text3);margin-bottom:2px}
-  .detail-card .dv{font-size:15px;font-weight:600;color:var(--text)}
-  .ai-detail{background:var(--info-bg);border-radius:var(--radius);padding:12px 14px;font-size:13px;color:var(--info);line-height:1.55;margin-bottom:12px}
-  .note-row{font-size:14px;color:var(--text2);margin-bottom:16px;padding:10px 12px;background:var(--bg2);border-radius:var(--radius)}
-  .del-btn{width:100%;padding:13px;background:none;border:1px solid var(--danger);color:var(--danger);border-radius:var(--radius-lg);font-size:15px;font-weight:500;cursor:pointer;margin-top:4px}
-  .del-btn:active{background:var(--danger-bg)}
-  .install-bar{display:none;background:var(--info-bg);color:var(--info);font-size:13px;padding:10px 16px;align-items:center;gap:10px;flex-shrink:0}
-  .install-bar button{margin-left:auto;background:var(--info);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
-  .install-bar .dismiss{background:none;color:var(--info);border:none;cursor:pointer;font-size:18px;padding:0;margin-left:4px}
-  .ios-hint{display:none;text-align:center;font-size:12px;color:var(--text3);padding:8px;flex-shrink:0}
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;overscroll-behavior:none}
+.app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden}
+.screen.active{display:flex}
+.topbar{padding:calc(var(--safe-top) + 12px) 16px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar h1{font-size:20px;font-weight:600;color:var(--text);flex:1}
+.topbar h2{font-size:18px;font-weight:600;color:var(--text);flex:1}
+.scroll{flex:1;overflow-y:auto;padding:16px;padding-bottom:calc(var(--safe-bot) + 100px)}
+.back-btn{background:none;border:none;cursor:pointer;color:var(--text2);font-size:26px;padding:4px;display:flex;align-items:center;line-height:1;min-width:32px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat{background:var(--bg2);border-radius:var(--radius);padding:12px 14px}
+.stat.wide{grid-column:1/-1}
+.stat .lbl{font-size:11px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+.stat .val{font-size:18px;font-weight:600;color:var(--text);line-height:1.2}
+
+/* FAB area — two buttons */
+.fab-wrap{position:fixed;bottom:calc(var(--safe-bot) + 16px);right:16px;display:flex;flex-direction:column;align-items:flex-end;gap:10px;z-index:20}
+.fab{width:56px;height:56px;border-radius:28px;background:var(--accent);color:var(--accent-fg);border:none;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.25)}
+.fab:active{transform:scale(0.93)}
+.fab-status{background:var(--bg);color:var(--text);border:1px solid var(--border2);box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.fab-label{font-size:11px;font-weight:600;background:var(--bg2);color:var(--text2);padding:4px 10px;border-radius:20px;border:1px solid var(--border);white-space:nowrap}
+.fab-row{display:flex;align-items:center;gap:8px}
+
+.sec-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.log-list{display:flex;flex-direction:column;gap:8px}
+.log-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 14px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.log-item:active{background:var(--bg2)}
+.log-item.is-status{border-left:3px solid var(--info)}
+.log-item.is-fuel{border-left:3px solid var(--success)}
+.log-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.log-date{font-size:13px;color:var(--text2)}
+.log-type{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-block;margin-top:2px}
+.type-fuel{background:var(--success-bg);color:var(--success)}
+.type-status{background:var(--info-bg);color:var(--info)}
+.log-station{font-size:12px;color:var(--text3);margin-top:1px}
+.log-cost{font-size:17px;font-weight:600;color:var(--text)}
+.log-metas{display:flex;gap:8px;margin-top:7px;flex-wrap:wrap}
+.meta{font-size:12px;color:var(--text2)}
+.badge-full{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--success-bg);color:var(--success)}
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty svg{display:block;margin:0 auto 14px;opacity:.35}
+.empty p{font-size:15px}
+
+/* Form */
+.form-group{margin-bottom:16px}
+.form-label{font-size:13px;font-weight:500;color:var(--text2);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
+.req{color:var(--danger)}
+.opt{font-size:11px;color:var(--text3);font-weight:400}
+input[type=number],input[type=text]{width:100%;font-size:16px;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg);color:var(--text);outline:none;-webkit-appearance:none}
+input:focus{border-color:var(--accent)}
+.hint{font-size:12px;color:var(--text3);margin-top:5px}
+.hint.ok{color:var(--success);font-weight:500}
+.seg{display:grid;gap:6px;margin-bottom:14px}
+.seg2{grid-template-columns:1fr 1fr}
+.seg-btn{padding:10px 6px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text2);font-size:14px;cursor:pointer;text-align:center;font-weight:500}
+.seg-btn.active{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.fuel-section{border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:16px}
+.fuel-section-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px}
+.section-divider{height:1px;background:var(--border);margin:16px 0}
+
+/* Gauge */
+.gauge-wrap{background:var(--bg2);border-radius:var(--radius-lg);padding:14px 16px 10px;margin-bottom:4px}
+.gauge-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;text-align:center;margin-bottom:8px}
+.gauge-svg{display:block;margin:0 auto}
+.gauge-val{text-align:center;font-size:15px;font-weight:600;color:var(--text);margin-top:6px}
+.gauge-taps{display:flex;gap:4px;margin-top:10px}
+.gauge-tap{flex:1;padding:7px 2px;border:1px solid var(--border2);border-radius:8px;background:var(--bg);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;text-align:center}
+.gauge-tap.active{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.gauge-fine{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}
+.gauge-fine-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border2);background:var(--bg);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.gauge-fine-btn:active{background:var(--bg3)}
+.gauge-fine-val{font-size:13px;color:var(--text3);min-width:80px;text-align:center}
+
+/* Setup */
+.setup-hero{text-align:center;padding:28px 0 20px}
+.setup-hero .icon{font-size:52px;display:block;margin-bottom:12px}
+.setup-hero h2{font-size:22px;font-weight:600;margin-bottom:6px}
+.setup-hero p{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* Detail */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.dc{background:var(--bg2);border-radius:var(--radius);padding:11px 13px}
+.dc.wide{grid-column:1/-1}
+.dc .dl{font-size:11px;color:var(--text3);margin-bottom:2px}
+.dc .dv{font-size:14px;font-weight:600;color:var(--text)}
+.note-row{font-size:14px;color:var(--text2);margin-bottom:14px;padding:10px 12px;background:var(--bg2);border-radius:var(--radius)}
+.del-btn{width:100%;padding:13px;background:none;border:1px solid var(--danger);color:var(--danger);border-radius:var(--radius-lg);font-size:15px;font-weight:500;cursor:pointer;margin-top:4px}
+.del-btn:active{background:var(--danger-bg)}
+.save-btn{width:100%;padding:15px;background:var(--accent);color:var(--accent-fg);border:none;border-radius:var(--radius-lg);font-size:16px;font-weight:600;cursor:pointer;margin-top:4px}
+.save-btn:active{opacity:.85}
+
+.install-bar{display:none;background:var(--info-bg);color:var(--info);font-size:13px;padding:10px 16px;align-items:center;gap:10px;flex-shrink:0}
+.install-bar button{margin-left:auto;background:var(--info);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.install-bar .dismiss{background:none;color:var(--info);border:none;cursor:pointer;font-size:18px;padding:0;margin-left:4px}
+.ios-hint{text-align:center;font-size:12px;color:var(--text3);padding:8px;flex-shrink:0}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="install-bar" id="install-bar">
-    <span>📲 Instala esta app en tu cel</span>
-    <button id="install-btn">Instalar</button>
-    <button class="dismiss" id="install-dismiss">✕</button>
-  </div>
-  <div class="screen active" id="screen-home">
-    <div class="topbar"><h1>⛽ Mi Tanque</h1></div>
-    <div class="scroll">
-      <div class="stat-grid">
-        <div class="stat"><div class="lbl">Total gastado</div><div class="val" id="s-total">$0.00</div></div>
-        <div class="stat"><div class="lbl">Cargas</div><div class="val" id="s-count">0</div></div>
-        <div class="stat"><div class="lbl">Promedio/carga</div><div class="val" id="s-avg">$0.00</div></div>
-        <div class="stat"><div class="lbl">Último millaje</div><div class="val" id="s-miles"><span class="unit">—</span></div></div>
-      </div>
-      <div class="sec-title">Historial</div>
-      <div class="log-list" id="log-list"></div>
+
+<div class="install-bar" id="install-bar">
+  <span>📲 Instala esta app</span>
+  <button id="install-btn">Instalar</button>
+  <button class="dismiss" id="install-dismiss">✕</button>
+</div>
+
+<!-- SETUP -->
+<div class="screen" id="screen-setup">
+  <div class="scroll">
+    <div class="setup-hero">
+      <span class="icon">⛽</span>
+      <h2>Bienvenido a Mi Tanque</h2>
+      <p>Para medir correctamente desde el inicio,<br>dinos el estado actual de tu vehículo.</p>
     </div>
-    <button class="fab" id="fab" onclick="goTo('screen-form')" aria-label="Registrar carga">+</button>
-  </div>
-  <div class="screen" id="screen-form">
-    <div class="topbar">
-      <button class="back-btn" onclick="goTo('screen-home')" aria-label="Volver">‹</button>
-      <h2>Nueva carga</h2>
+    <div class="form-group">
+      <div class="form-label">Odómetro actual (millas) <span class="req">*</span></div>
+      <input type="number" id="setup-odo" placeholder="ej. 45230" min="0" step="1" inputmode="numeric">
+      <div class="hint">El número que muestra tu tablero ahora mismo</div>
     </div>
-    <div class="scroll">
-      <div class="form-group">
-        <div class="form-label">Millaje / trip <span class="req">*</span></div>
-        <input type="number" id="f-mileage" placeholder="ej. 250 (desde última carga)" min="0" step="0.1" inputmode="decimal">
-      </div>
-      <div class="form-group">
-        <div class="form-label">¿Cómo mides la gasolina? <span class="req">*</span></div>
-        <div class="seg seg2">
-          <button class="seg-btn active" id="btn-gal" onclick="setFuelMode('gallons')">Galones</button>
-          <button class="seg-btn" id="btn-usd-fuel" onclick="setFuelMode('dollars')">Dólares</button>
-        </div>
-        <input type="number" id="f-fuel" placeholder="ej. 3.5 galones" min="0" step="0.01" inputmode="decimal">
-      </div>
-      <div class="form-group">
-        <div class="form-label">Dinero pagado ($) <span class="req">*</span></div>
-        <input type="number" id="f-paid" placeholder="ej. 15.00" min="0" step="0.01" inputmode="decimal">
-      </div>
-      <div class="form-group">
-        <div class="form-label">¿Llenó el tanque? <span class="opt">opcional</span></div>
-        <div class="seg seg3">
-          <button class="seg-btn" id="btn-no" onclick="setFull('no')">No</button>
-          <button class="seg-btn active" id="btn-half" onclick="setFull('half')">Parcial</button>
-          <button class="seg-btn" id="btn-yes" onclick="setFull('full')">Full ✓</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="form-label">Foto del tablero <span class="opt">opcional — Claude la analiza</span></div>
-        <div id="photo-zone">
-          <div class="photo-drop" onclick="document.getElementById('photo-input').click()">
-            <span class="icon">📷</span>
-            <p>Toca para tomar foto o elegir de galería</p>
-            <small>El odómetro y nivel de combustible se detectan solos</small>
-          </div>
-        </div>
-        <input type="file" id="photo-input" accept="image/*" capture="environment">
-      </div>
-      <div class="ai-box" id="ai-box" style="display:none">
-        <div class="ai-lbl">✦ Claude analizó tu tablero</div>
-        <div id="ai-text"></div>
-      </div>
-      <div class="form-group">
-        <div class="form-label">Gasolinera / nota <span class="opt">opcional</span></div>
-        <input type="text" id="f-note" placeholder="ej. Shell Blvd Los Héroes">
-      </div>
-      <button class="save-btn" onclick="saveEntry()">Guardar carga</button>
+    <div class="form-group">
+      <div class="form-label">Nivel actual del tanque</div>
+      <div id="setup-gauge"></div>
     </div>
-  </div>
-  <div class="screen" id="screen-detail">
-    <div class="topbar">
-      <button class="back-btn" onclick="goTo('screen-home')" aria-label="Volver">‹</button>
-      <h2>Detalle de carga</h2>
+    <div class="form-group">
+      <div class="form-label">Capacidad del tanque (galones) <span class="opt">opcional</span></div>
+      <input type="number" id="setup-cap" placeholder="ej. 13.2" min="0" step="0.1" inputmode="decimal">
     </div>
-    <div class="scroll" id="detail-content"></div>
+    <button class="save-btn" onclick="saveSetup()">Comenzar →</button>
   </div>
 </div>
+
+<!-- HOME -->
+<div class="screen" id="screen-home">
+  <div class="topbar">
+    <h1>⛽ Mi Tanque</h1>
+    <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-settings')" aria-label="Ajustes">⚙️</button>
+  </div>
+  <div class="scroll">
+    <div class="stat-grid">
+      <div class="stat"><div class="lbl">Total gastado</div><div class="val" id="s-total">$0.00</div></div>
+      <div class="stat"><div class="lbl">Cargas</div><div class="val" id="s-count">0</div></div>
+      <div class="stat wide"><div class="lbl">Odómetro</div><div class="val" id="s-odo">—</div></div>
+      <div class="stat wide"><div class="lbl">Eficiencia</div><div class="val" id="s-mpg">—</div></div>
+      <div class="stat wide"><div class="lbl">Rendimiento</div><div class="val" id="s-mpd">—</div></div>
+    </div>
+    <div class="sec-title">Historial</div>
+    <div class="log-list" id="log-list"></div>
+  </div>
+  <!-- Dos botones flotantes -->
+  <div class="fab-wrap">
+    <div class="fab-row">
+      <span class="fab-label">Solo status</span>
+      <button class="fab fab-status" onclick="goTo('screen-status')" aria-label="Actualizar status">📍</button>
+    </div>
+    <div class="fab-row">
+      <span class="fab-label">Cargar gasolina</span>
+      <button class="fab" onclick="goTo('screen-form')" aria-label="Nueva carga">⛽</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORM: CARGA DE COMBUSTIBLE -->
+<div class="screen" id="screen-form">
+  <div class="topbar">
+    <button class="back-btn" onclick="goTo('screen-home')" aria-label="Volver">‹</button>
+    <h2>Cargar gasolina</h2>
+  </div>
+  <div class="scroll">
+    <div class="form-group">
+      <div class="form-label">Odómetro o trip (millas) <span class="req">*</span></div>
+      <input type="number" id="f-mileage" placeholder="ej. 45480 ó 250" min="0" step="0.1" inputmode="decimal">
+      <div class="hint" id="mileage-hint">≥ 1000 → odómetro &nbsp;|&nbsp; &lt; 1000 → trip</div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Gasolina cargada <span class="req">*</span></div>
+      <div class="seg seg2">
+        <button class="seg-btn active" id="btn-gal" onclick="setFuelMode('gallons')">Galones</button>
+        <button class="seg-btn" id="btn-usd-fuel" onclick="setFuelMode('dollars')">Dólares</button>
+      </div>
+      <input type="number" id="f-fuel" placeholder="ej. 3.5 galones" min="0" step="0.01" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Dinero pagado ($) <span class="req">*</span></div>
+      <input type="number" id="f-paid" placeholder="ej. 15.00" min="0" step="0.01" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Nivel del tanque después de cargar</div>
+      <div id="form-gauge"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Gasolinera / nota <span class="opt">opcional</span></div>
+      <input type="text" id="f-note" placeholder="ej. Shell Blvd Los Héroes">
+    </div>
+    <button class="save-btn" onclick="saveEntry()">Guardar carga</button>
+  </div>
+</div>
+
+<!-- FORM: SOLO STATUS -->
+<div class="screen" id="screen-status">
+  <div class="topbar">
+    <button class="back-btn" onclick="goTo('screen-home')" aria-label="Volver">‹</button>
+    <h2>Actualizar status</h2>
+  </div>
+  <div class="scroll">
+    <div class="form-group">
+      <div class="form-label">Odómetro o trip (millas) <span class="req">*</span></div>
+      <input type="number" id="st-mileage" placeholder="ej. 45480 ó 250" min="0" step="0.1" inputmode="decimal">
+      <div class="hint" id="st-mileage-hint">≥ 1000 → odómetro &nbsp;|&nbsp; &lt; 1000 → trip</div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Nivel actual del tanque</div>
+      <div id="status-gauge"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Nota <span class="opt">opcional</span></div>
+      <input type="text" id="st-note" placeholder="ej. Llegué a casa, tanque a la mitad">
+    </div>
+    <button class="save-btn" onclick="saveStatus()">Guardar status</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="screen-settings">
+  <div class="topbar">
+    <button class="back-btn" onclick="goTo('screen-home')">‹</button>
+    <h2>Ajustes</h2>
+  </div>
+  <div class="scroll">
+    <div class="form-group">
+      <div class="form-label">Odómetro inicial (millas)</div>
+      <input type="number" id="set-odo" inputmode="numeric" min="0" step="1">
+    </div>
+    <div class="form-group">
+      <div class="form-label">Capacidad del tanque (galones)</div>
+      <input type="number" id="set-cap" inputmode="decimal" min="0" step="0.1">
+    </div>
+    <button class="save-btn" onclick="saveSettings()">Guardar</button>
+    <div style="margin-top:12px">
+      <button class="del-btn" onclick="resetAll()">🗑 Borrar todos los datos</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="screen" id="screen-detail">
+  <div class="topbar">
+    <button class="back-btn" onclick="goTo('screen-home')">‹</button>
+    <h2>Detalle</h2>
+  </div>
+  <div class="scroll" id="detail-content"></div>
+</div>
+
+</div>
 <script>
-const STORAGE_KEY='mi_tanque_v1';
-let entries=[];
-let fuelMode='gallons';
-let fullStatus='half';
-let photoB64=null;
-let photoMime='image/jpeg';
+const MI2KM = 1.60934;
+const GAL2L  = 3.78541;
+const LEVELS = ['E','1/4','1/2','3/4','F'];
+const LVALS  = [0, 0.25, 0.5, 0.75, 1.0];
+const SK     = 'mi_tanque_v3';
+
+let state = { entries:[], setup:null };
+try { const s=localStorage.getItem(SK); if(s) state=JSON.parse(s); } catch(e){}
+function persist(){ try{ localStorage.setItem(SK,JSON.stringify(state)); }catch(e){} }
+
+// ── Formatters ────────────────────────────────────────────
+function fmtDist(mi){ if(!mi&&mi!==0) return '—'; return mi.toLocaleString(undefined,{maximumFractionDigits:1})+' mi / '+(mi*MI2KM).toLocaleString(undefined,{maximumFractionDigits:1})+' km'; }
+function fmtDistShort(mi){ if(!mi) return ''; return mi.toFixed(1)+' mi ('+(mi*MI2KM).toFixed(1)+' km)'; }
+function fmtOdo(mi){ if(!mi) return '—'; return mi.toLocaleString()+' mi / '+Math.round(mi*MI2KM).toLocaleString()+' km'; }
+function fmtMpg(mpg){ if(!mpg) return '—'; return mpg.toFixed(1)+' mpg · '+(mpg/MI2KM*GAL2L).toFixed(1)+' km/L'; }
+function fmtMpd(mpd){ if(!mpd) return '—'; return mpd.toFixed(1)+' mi/$ · '+(mpd*MI2KM).toFixed(1)+' km/$'; }
+function fmtCpp(paid,trip){ if(!paid||!trip) return '—'; return '$'+(paid/trip).toFixed(3)+'/mi · $'+(paid/(trip*MI2KM)).toFixed(3)+'/km'; }
+function nearestLevel(v){ return LEVELS[LVALS.reduce((bi,lv,i)=>Math.abs(lv-v)<Math.abs(LVALS[bi]-v)?i:bi,0)]; }
+
+// ── PWA ───────────────────────────────────────────────────
 let deferredPrompt=null;
-try{entries=JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch(e){entries=[];}
-function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(entries));}catch(e){}}
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('install-bar').style.display='flex';});
-document.getElementById('install-btn').onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();const{outcome}=await deferredPrompt.userChoice;deferredPrompt=null;document.getElementById('install-bar').style.display='none';};
-document.getElementById('install-dismiss').onclick=()=>{document.getElementById('install-bar').style.display='none';};
-const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone;
-if(isIOS){const hint=document.createElement('div');hint.className='ios-hint';hint.style.display='block';hint.innerHTML='Para instalar: toca <b>Compartir</b> → <b>Agregar a pantalla de inicio</b>';document.querySelector('.app').appendChild(hint);}
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
-function goTo(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='screen-home')renderHome();if(id==='screen-form')resetForm();}
-function setFuelMode(m){fuelMode=m;document.getElementById('btn-gal').classList.toggle('active',m==='gallons');document.getElementById('btn-usd-fuel').classList.toggle('active',m==='dollars');document.getElementById('f-fuel').placeholder=m==='gallons'?'ej. 3.5 galones':'ej. 12.00 (en combustible)';}
-function setFull(v){fullStatus=v;['no','half','full'].forEach(x=>document.getElementById('btn-'+x).classList.toggle('active',x===v));}
-function resetForm(){['f-mileage','f-fuel','f-paid','f-note'].forEach(id=>document.getElementById(id).value='');document.getElementById('ai-box').style.display='none';document.getElementById('photo-zone').innerHTML='<div class="photo-drop" onclick="document.getElementById(\'photo-input\').click()"><span class="icon">📷</span><p>Toca para tomar foto o elegir de galería</p><small>El odómetro y nivel de combustible se detectan solos</small></div>';document.getElementById('photo-input').value='';photoB64=null;photoMime='image/jpeg';fuelMode='gallons';fullStatus='half';setFuelMode('gallons');setFull('half');}
-document.getElementById('photo-input').addEventListener('change',async function(e){const file=e.target.files[0];if(!file)return;photoMime=file.type||'image/jpeg';const reader=new FileReader();reader.onload=async ev=>{const dataUrl=ev.target.result;photoB64=dataUrl.split(',')[1];document.getElementById('photo-zone').innerHTML='<div class="photo-preview-wrap"><img src="'+dataUrl+'" class="photo-preview" alt="Tablero"><button class="photo-remove" onclick="removePhoto()">✕</button></div>';await analyzePhoto(photoB64,photoMime);};reader.readAsDataURL(file);});
-function removePhoto(){photoB64=null;document.getElementById('photo-input').value='';document.getElementById('ai-box').style.display='none';document.getElementById('photo-zone').innerHTML='<div class="photo-drop" onclick="document.getElementById(\'photo-input\').click()"><span class="icon">📷</span><p>Toca para tomar foto o elegir de galería</p><small>El odómetro y nivel de combustible se detectan solos</small></div>';}
-async function analyzePhoto(b64,mime){const box=document.getElementById('ai-box');const txt=document.getElementById('ai-text');box.style.display='block';txt.innerHTML='<div class="spinner-wrap"><div class="spinner"></div>Analizando tablero…</div>';try{const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:mime,data:b64}},{type:'text',text:'Analiza esta foto del tablero de un vehículo. Responde SOLO en JSON sin markdown:\n{"odometro":null_o_numero,"nivel":"vacío|cuarto|mitad|tres_cuartos|lleno|desconocido","full":true_o_false,"nota":"observación breve en español max 60 caracteres"}\n"full" es true solo si el indicador muestra lleno/full. Si no ves tablero o no puedes leer, pon null en odometro y "desconocido" en nivel.'}]}]})});const data=await resp.json();const raw=data.content?.find(b=>b.type==='text')?.text||'{}';let p;try{p=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){p={};}let parts=[];if(p.odometro){parts.push('<b>Odómetro:</b> '+Number(p.odometro).toLocaleString());const mf=document.getElementById('f-mileage');if(!mf.value)mf.value=p.odometro;}if(p.nivel&&p.nivel!=='desconocido')parts.push('<b>Nivel:</b> '+p.nivel);if(p.full===true)setFull('full');if(p.nota)parts.push(p.nota);txt.innerHTML=parts.length?parts.join(' &nbsp;·&nbsp; '):'Recibida. Completa los datos manualmente.';}catch(err){txt.innerHTML='No se pudo analizar. Completa los datos manualmente.';}}
-function saveEntry(){const mileage=parseFloat(document.getElementById('f-mileage').value);const fuel=parseFloat(document.getElementById('f-fuel').value);const paid=parseFloat(document.getElementById('f-paid').value);if(isNaN(mileage)||mileage<=0){alert('Ingresa el millaje o trip.');return;}if(isNaN(paid)||paid<=0){alert('Ingresa el dinero pagado.');return;}const entry={id:Date.now(),date:new Date().toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),ts:Date.now(),mileage,fuel:isNaN(fuel)?null:fuel,fuelMode,paid,fullStatus,note:document.getElementById('f-note').value.trim(),photo:photoB64?('data:'+photoMime+';base64,'+photoB64):null,aiNote:document.getElementById('ai-text').innerText||null};entries.unshift(entry);persist();goTo('screen-home');}
-function renderHome(){const total=entries.reduce((s,e)=>s+e.paid,0);const avg=entries.length?total/entries.length:0;const last=entries.length?entries[0].mileage:null;document.getElementById('s-total').textContent='$'+total.toFixed(2);document.getElementById('s-count').textContent=entries.length;document.getElementById('s-avg').textContent='$'+avg.toFixed(2);document.getElementById('s-miles').innerHTML=last?last.toLocaleString():'<span class="unit">—</span>';const list=document.getElementById('log-list');if(!entries.length){list.innerHTML='<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h2l1 2h13l1-3H6"/><path d="M7 17a1 1 0 100-2 1 1 0 000 2z"/><path d="M17 17a1 1 0 100-2 1 1 0 000 2z"/></svg><p>Sin registros aún.<br>Toca <b>+</b> para agregar tu primera carga.</p></div>';return;}list.innerHTML=entries.map(e=>{const fuelStr=e.fuel?(e.fuelMode==='gallons'?e.fuel+' gal':'$'+e.fuel.toFixed(2)+' combustible'):'';const fullBadge=e.fullStatus==='full'?'<span class="badge badge-full">Full</span>':'';const photoBadge=e.photo?'<span class="badge badge-photo">📷</span>':'';return'<div class="log-item" onclick="showDetail('+e.id+')"><div class="log-row"><div><div class="log-date">'+e.date+'</div>'+(e.note?'<div class="log-station">'+e.note+'</div>':'')+'</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="log-cost">$'+e.paid.toFixed(2)+'</div><div style="display:flex;gap:4px">'+fullBadge+photoBadge+'</div></div></div><div class="log-metas"><span class="meta">🛣 '+e.mileage.toLocaleString()+' mi/km</span>'+(fuelStr?'<span class="meta">⛽ '+fuelStr+'</span>':'')+'</div></div>';}).join('');}
-function showDetail(id){const e=entries.find(x=>x.id===id);if(!e)return;const fuelStr=e.fuel?(e.fuelMode==='gallons'?e.fuel+' galones':'$'+e.fuel.toFixed(2)+' en combustible'):'No registrado';const pricePer=(e.fuel&&e.fuelMode==='gallons'&&e.paid)?'$'+(e.paid/e.fuel).toFixed(3)+'/gal':'—';const fullMap={no:'No',half:'Parcial',full:'Sí, full ✓'};let html='';if(e.photo)html+='<img src="'+e.photo+'" class="detail-photo" alt="Tablero">';html+='<div class="detail-grid"><div class="detail-card"><div class="dl">Fecha</div><div class="dv">'+e.date+'</div></div><div class="detail-card"><div class="dl">Pagado</div><div class="dv">$'+e.paid.toFixed(2)+'</div></div><div class="detail-card"><div class="dl">Millaje/trip</div><div class="dv">'+e.mileage.toLocaleString()+'</div></div><div class="detail-card"><div class="dl">Gasolina</div><div class="dv">'+fuelStr+'</div></div><div class="detail-card"><div class="dl">Precio/galón</div><div class="dv">'+pricePer+'</div></div><div class="detail-card"><div class="dl">¿Full?</div><div class="dv">'+(fullMap[e.fullStatus]||'—')+'</div></div></div>';if(e.note)html+='<div class="note-row">📍 '+e.note+'</div>';if(e.aiNote&&e.aiNote.trim()&&!e.aiNote.includes('manualmente'))html+='<div class="ai-detail">✦ <b>Claude:</b> '+e.aiNote+'</div>';html+='<button class="del-btn" onclick="deleteEntry('+e.id+')">🗑 Eliminar este registro</button>';document.getElementById('detail-content').innerHTML=html;document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-detail').classList.add('active');}
-function deleteEntry(id){if(!confirm('¿Seguro que quieres eliminar este registro?'))return;entries=entries.filter(e=>e.id!==id);persist();goTo('screen-home');}
-setFuelMode('gallons');setFull('half');renderHome();
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; document.getElementById('install-bar').style.display='flex'; });
+document.getElementById('install-btn').onclick=async()=>{ if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; document.getElementById('install-bar').style.display='none'; };
+document.getElementById('install-dismiss').onclick=()=>{ document.getElementById('install-bar').style.display='none'; };
+if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone){ const h=document.createElement('div'); h.className='ios-hint'; h.innerHTML='Para instalar: toca <b>Compartir</b> → <b>Agregar a pantalla de inicio</b>'; document.querySelector('.app').appendChild(h); }
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+// ── Gauge ─────────────────────────────────────────────────
+function createGauge(containerId, initVal){
+  const el=document.getElementById(containerId);
+  const TANK=15.7, RESERVE=1.0;
+  const RFRAC=RESERVE/TANK;
+  const STEP=0.5/TANK;
+  // Arc: E at 210° (7 o'clock), F at 330° (5 o'clock), clockwise 120° span over top
+  const DEG_E=210, DEG_F=330, SPAN=120;
+  let val=Math.max(0,Math.min(1,initVal??0.5));
+
+  function toXY(deg,r,cx,cy){ const rad=deg*Math.PI/180; return{x:+(cx+r*Math.cos(rad)).toFixed(2),y:+(cy+r*Math.sin(rad)).toFixed(2)}; }
+  function fracToDeg(f){ return((DEG_E+f*SPAN)%360+360)%360; }
+  function makePath(f0,f1,r,cx,cy){
+    const d0=fracToDeg(f0),d1=fracToDeg(f1);
+    const p0=toXY(d0,r,cx,cy),p1=toXY(d1,r,cx,cy);
+    const sp=(f1-f0)*SPAN; const large=sp>180?1:0;
+    return `M${p0.x} ${p0.y} A${r} ${r} 0 ${large} 1 ${p1.x} ${p1.y}`;
+  }
+
+  const CX=110,CY=95,R=78;
+
+  function buildTicks(){
+    let s='';
+    for(let i=0;i<=12;i++){
+      const f=i/12,deg=fracToDeg(f);
+      const isMain=(i%3===0);
+      const r1=isMain?R-14:R-8,r2=R+2;
+      const p1=toXY(deg,r1,CX,CY),p2=toXY(deg,r2,CX,CY);
+      const col=f<=RFRAC?'#d32f2f':'var(--text3)';
+      s+=`<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${col}" stroke-width="${isMain?2.5:1.2}" stroke-linecap="round"/>`;
+    }
+    return s;
+  }
+
+  const eP=toXY(DEG_E,R+16,CX,CY);
+  const fP=toXY(DEG_F,R+16,CX,CY);
+  const resP=toXY(fracToDeg(RFRAC*0.5),R+18,CX,CY);
+
+  el.innerHTML=`<div class="gauge-wrap">
+    <div class="gauge-lbl">Nivel — Outlander 2003</div>
+    <svg class="gauge-svg" width="220" height="130" viewBox="0 0 220 130">
+      <circle cx="${CX}" cy="${CY}" r="${R+14}" fill="var(--bg3)" stroke="var(--border2)" stroke-width="1"/>
+      <circle cx="${CX}" cy="${CY}" r="${R+10}" fill="var(--bg)" stroke="var(--border)" stroke-width="0.5"/>
+      <path d="${makePath(0,1,R,CX,CY)}" fill="none" stroke="var(--border2)" stroke-width="7" stroke-linecap="butt"/>
+      <path d="${makePath(0,RFRAC,R,CX,CY)}" fill="none" stroke="#d32f2f" stroke-width="7" stroke-linecap="butt" opacity="0.3"/>
+      <path id="${containerId}-fill" fill="none" stroke-width="7" stroke-linecap="butt"/>
+      ${buildTicks()}
+      <text x="${(eP.x-6).toFixed(1)}" y="${(eP.y+5).toFixed(1)}" font-size="12" font-weight="700" fill="#d32f2f">E</text>
+      <text x="${(fP.x-4).toFixed(1)}" y="${(fP.y+5).toFixed(1)}" font-size="12" font-weight="700" fill="#2e7d32">F</text>
+      <text x="${(resP.x-7).toFixed(1)}" y="${(resP.y).toFixed(1)}" font-size="8" fill="#d32f2f" opacity="0.8">RES</text>
+      <line id="${containerId}-needle" stroke="#d32f2f" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="${CX}" cy="${CY}" r="9" fill="var(--text2)" stroke="var(--border2)" stroke-width="1.5"/>
+      <circle cx="${CX}" cy="${CY}" r="4" fill="var(--bg)"/>
+    </svg>
+    <div class="gauge-val" id="${containerId}-val"></div>
+    <div class="gauge-taps" id="${containerId}-taps"></div>
+    <div class="gauge-fine">
+      <button class="gauge-fine-btn" id="${containerId}-minus">−</button>
+      <span class="gauge-fine-val" id="${containerId}-fine"></span>
+      <button class="gauge-fine-btn" id="${containerId}-plus">+</button>
+    </div>
+  </div>`;
+
+  const tapsEl=document.getElementById(containerId+'-taps');
+  LEVELS.forEach((l,i)=>{ const b=document.createElement('button'); b.className='gauge-tap'; b.textContent=l; b.onclick=()=>setVal(LVALS[i]); tapsEl.appendChild(b); });
+  document.getElementById(containerId+'-minus').onclick=()=>setVal(val-STEP);
+  document.getElementById(containerId+'-plus').onclick=()=>setVal(val+STEP);
+
+  function setVal(v){
+    val=Math.max(0,Math.min(1,v));
+    const deg=fracToDeg(val);
+    const fillEl=document.getElementById(containerId+'-fill');
+    const needleEl=document.getElementById(containerId+'-needle');
+    const valEl=document.getElementById(containerId+'-val');
+    const fineEl=document.getElementById(containerId+'-fine');
+    if(val>0.005){
+      fillEl.setAttribute('d',makePath(0,val,R,CX,CY));
+      fillEl.setAttribute('stroke',val<=RFRAC?'#d32f2f':val<0.28?'#e65100':val<0.55?'#f59f00':'#2e7d32');
+    } else { fillEl.setAttribute('d',''); }
+    const tip=toXY(deg,R-16,CX,CY);
+    needleEl.setAttribute('x1',CX); needleEl.setAttribute('y1',CY);
+    needleEl.setAttribute('x2',tip.x); needleEl.setAttribute('y2',tip.y);
+    tapsEl.querySelectorAll('.gauge-tap').forEach((b,i)=>{ b.classList.toggle('active',Math.abs(LVALS[i]-val)<STEP*3); });
+    const gals=(val*TANK).toFixed(1);
+    const usable=Math.max(0,val*TANK-RESERVE).toFixed(1);
+    valEl.textContent=nearestLevel(val)+' ('+Math.round(val*100)+'%)';
+    fineEl.textContent='~'+gals+' gal · '+usable+' usables';
+    if(val*TANK<=RESERVE) fineEl.textContent+=' ⚠️';
+  }
+  setVal(val);
+  return{ getVal:()=>val, setVal };
+}
+
+// ── Navegación ────────────────────────────────────────────
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='screen-home') renderHome();
+  if(id==='screen-form') initForm();
+  if(id==='screen-status') initStatus();
+  if(id==='screen-settings') initSettings();
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function getLastOdo(){
+  const e=state.entries.find(e=>e.odoValue);
+  return e?e.odoValue:(state.setup?.odo||null);
+}
+function setupMileageHint(inputId, hintId){
+  document.getElementById(inputId).addEventListener('input',function(){
+    const v=parseFloat(this.value);
+    const hint=document.getElementById(hintId);
+    if(!v){ hint.textContent='≥ 1000 → odómetro | < 1000 → trip'; hint.className='hint'; return; }
+    if(v>=1000){
+      const prev=getLastOdo();
+      const trip=prev&&v>prev?fmtDistShort(v-prev):null;
+      hint.textContent='📍 Odómetro'+(trip?' · Trip estimado: '+trip:'');
+      hint.className='hint ok';
+    } else {
+      hint.textContent='🛣 Trip: '+fmtDistShort(v);
+      hint.className='hint ok';
+    }
+  });
+}
+function parseEntry(raw){
+  const isOdo=raw>=1000;
+  let trip=null, odoValue=null;
+  if(isOdo){ odoValue=raw; const prev=getLastOdo(); if(prev&&raw>prev) trip=raw-prev; }
+  else { trip=raw; const prev=getLastOdo(); if(prev) odoValue=prev+raw; }
+  return{isOdo,trip,odoValue};
+}
+
+// ── Setup (primera vez) ───────────────────────────────────
+let setupGauge=null;
+function initSetup(){ setupGauge=createGauge('setup-gauge',0.5); }
+function saveSetup(){
+  const odo=parseFloat(document.getElementById('setup-odo').value);
+  if(!odo||odo<0){ alert('Ingresa el odómetro actual.'); return; }
+  state.setup={ odo, level:setupGauge?setupGauge.getVal():0.5, capacity:parseFloat(document.getElementById('setup-cap').value)||null };
+  persist(); goTo('screen-home');
+}
+
+// ── Settings ──────────────────────────────────────────────
+function initSettings(){ document.getElementById('set-odo').value=state.setup?.odo||''; document.getElementById('set-cap').value=state.setup?.capacity||''; }
+function saveSettings(){
+  if(!state.setup) state.setup={};
+  const odo=parseFloat(document.getElementById('set-odo').value);
+  if(odo) state.setup.odo=odo;
+  state.setup.capacity=parseFloat(document.getElementById('set-cap').value)||null;
+  persist(); alert('Guardado.'); goTo('screen-home');
+}
+function resetAll(){ if(!confirm('¿Borrar todos los datos?')) return; state={entries:[],setup:null}; persist(); location.reload(); }
+
+// ── Form: Carga ───────────────────────────────────────────
+let fuelMode='gallons';
+let formGauge=null;
+function initForm(){
+  ['f-mileage','f-fuel','f-paid','f-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('mileage-hint').textContent='≥ 1000 → odómetro | < 1000 → trip';
+  document.getElementById('mileage-hint').className='hint';
+  fuelMode='gallons'; setFuelMode('gallons');
+  formGauge=createGauge('form-gauge',0.75);
+}
+function setFuelMode(m){
+  fuelMode=m;
+  document.getElementById('btn-gal').classList.toggle('active',m==='gallons');
+  document.getElementById('btn-usd-fuel').classList.toggle('active',m==='dollars');
+  document.getElementById('f-fuel').placeholder=m==='gallons'?'ej. 3.5 galones':'ej. 12.00 (en combustible)';
+}
+function saveEntry(){
+  const raw=parseFloat(document.getElementById('f-mileage').value);
+  const fuel=parseFloat(document.getElementById('f-fuel').value);
+  const paid=parseFloat(document.getElementById('f-paid').value);
+  if(isNaN(raw)||raw<=0){ alert('Ingresa el odómetro o trip.'); return; }
+  if(isNaN(paid)||paid<=0){ alert('Ingresa el dinero pagado.'); return; }
+  const{isOdo,trip,odoValue}=parseEntry(raw);
+  state.entries.unshift({
+    id:Date.now(), type:'fuel',
+    date:new Date().toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),
+    ts:Date.now(), mileage:raw, isOdo, trip, odoValue,
+    fuel:isNaN(fuel)?null:fuel, fuelMode, paid,
+    level:formGauge?formGauge.getVal():null,
+    note:document.getElementById('f-note').value.trim()
+  });
+  persist(); goTo('screen-home');
+}
+
+// ── Form: Status ──────────────────────────────────────────
+let statusGauge=null;
+function initStatus(){
+  ['st-mileage','st-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('st-mileage-hint').textContent='≥ 1000 → odómetro | < 1000 → trip';
+  document.getElementById('st-mileage-hint').className='hint';
+  statusGauge=createGauge('status-gauge', state.setup?.level??0.5);
+}
+function saveStatus(){
+  const raw=parseFloat(document.getElementById('st-mileage').value);
+  if(isNaN(raw)||raw<=0){ alert('Ingresa el odómetro o trip.'); return; }
+  const{isOdo,trip,odoValue}=parseEntry(raw);
+  state.entries.unshift({
+    id:Date.now(), type:'status',
+    date:new Date().toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),
+    ts:Date.now(), mileage:raw, isOdo, trip, odoValue,
+    level:statusGauge?statusGauge.getVal():null,
+    note:document.getElementById('st-note').value.trim()
+  });
+  persist(); goTo('screen-home');
+}
+
+// ── Stats ─────────────────────────────────────────────────
+function calcStats(){
+  const es=state.entries;
+  const fuelEntries=es.filter(e=>e.type==='fuel');
+  const total=fuelEntries.reduce((s,e)=>s+e.paid,0);
+  const mpgArr=fuelEntries.filter(e=>e.trip&&e.fuel&&e.fuelMode==='gallons');
+  const mpg=mpgArr.length?mpgArr.reduce((s,e)=>s+e.trip/e.fuel,0)/mpgArr.length:null;
+  const mpdArr=fuelEntries.filter(e=>e.trip&&e.paid);
+  const mpd=mpdArr.length?mpdArr.reduce((s,e)=>s+e.trip/e.paid,0)/mpdArr.length:null;
+  const lastOdo=es.length?(es[0].odoValue||null):null;
+  return{total,mpg,mpd,count:fuelEntries.length,lastOdo};
+}
+
+// ── Home ──────────────────────────────────────────────────
+function renderHome(){
+  const{total,mpg,mpd,count,lastOdo}=calcStats();
+  document.getElementById('s-total').textContent='$'+total.toFixed(2);
+  document.getElementById('s-count').textContent=count;
+  document.getElementById('s-odo').textContent=fmtOdo(lastOdo||state.setup?.odo);
+  document.getElementById('s-mpg').textContent=fmtMpg(mpg);
+  document.getElementById('s-mpd').textContent=fmtMpd(mpd);
+
+  const list=document.getElementById('log-list');
+  if(!state.entries.length){
+    list.innerHTML='<div class="empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10h2l1 2h13l1-3H6"/><path d="M7 17a1 1 0 100-2 1 1 0 000 2z"/><path d="M17 17a1 1 0 100-2 1 1 0 000 2z"/></svg><p>Sin registros aún.<br>Usa los botones de abajo para agregar.</p></div>';
+    return;
+  }
+  list.innerHTML=state.entries.map(e=>{
+    const isFuel=e.type==='fuel';
+    const tripStr=e.trip?fmtDistShort(e.trip):'';
+    const fuelStr=isFuel&&e.fuel?(e.fuelMode==='gallons'?e.fuel+' gal':'$'+e.fuel.toFixed(2)):'';
+    const mpgVal=(e.trip&&e.fuel&&e.fuelMode==='gallons')?(e.trip/e.fuel):null;
+    const mpgStr=mpgVal?mpgVal.toFixed(1)+' mpg':'';
+    const levelStr=e.level!=null?nearestLevel(e.level)+' ('+Math.round(e.level*100)+'%)':'';
+    const typeBadge=isFuel
+      ?'<span class="log-type type-fuel">⛽ Carga</span>'
+      :'<span class="log-type type-status">📍 Status</span>';
+    return `<div class="log-item ${isFuel?'is-fuel':'is-status'}" onclick="showDetail(${e.id})">
+      <div class="log-row">
+        <div>
+          <div class="log-date">${e.date} ${typeBadge}</div>
+          ${e.note?`<div class="log-station">${e.note}</div>`:''}
+        </div>
+        ${isFuel?`<div class="log-cost">$${e.paid.toFixed(2)}</div>`:''}
+      </div>
+      <div class="log-metas">
+        ${tripStr?`<span class="meta">🛣 ${tripStr}</span>`:''}
+        ${fuelStr?`<span class="meta">⛽ ${fuelStr}</span>`:''}
+        ${mpgStr?`<span class="meta">📊 ${mpgStr}</span>`:''}
+        ${levelStr?`<span class="meta">🟢 ${levelStr}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Detail ────────────────────────────────────────────────
+function showDetail(id){
+  const e=state.entries.find(x=>x.id===id);
+  if(!e) return;
+  const isFuel=e.type==='fuel';
+  const fuelStr=e.fuel?(e.fuelMode==='gallons'?e.fuel+' gal':'$'+e.fuel.toFixed(2)+' combustible'):'—';
+  const mpgVal=(e.trip&&e.fuel&&e.fuelMode==='gallons')?(e.trip/e.fuel):null;
+  const mpdVal=(e.trip&&e.paid)?(e.trip/e.paid):null;
+  const levelStr=e.level!=null?nearestLevel(e.level)+' ('+Math.round(e.level*100)+'%)':'—';
+  const typeLabel=isFuel?'⛽ Carga de combustible':'📍 Actualización de status';
+
+  let html=`<div style="margin-bottom:14px"><span class="log-type ${isFuel?'type-fuel':'type-status'}" style="font-size:13px;padding:4px 12px">${typeLabel}</span></div>
+  <div class="detail-grid">
+    <div class="dc"><div class="dl">Fecha</div><div class="dv">${e.date}</div></div>
+    ${isFuel?`<div class="dc"><div class="dl">Pagado</div><div class="dv">$${e.paid.toFixed(2)}</div></div>`:'<div class="dc"><div class="dl">Nivel</div><div class="dv">'+levelStr+'</div></div>'}
+    <div class="dc wide"><div class="dl">${e.isOdo?'Odómetro':'Trip ingresado'}</div><div class="dv">${fmtDist(e.mileage)}</div></div>
+    <div class="dc wide"><div class="dl">Trip calculado</div><div class="dv">${e.trip?fmtDist(e.trip):'—'}</div></div>
+    ${isFuel?`
+    <div class="dc"><div class="dl">Gasolina</div><div class="dv">${fuelStr}</div></div>
+    <div class="dc"><div class="dl">Nivel tras carga</div><div class="dv">${levelStr}</div></div>
+    <div class="dc wide"><div class="dl">Eficiencia</div><div class="dv">${fmtMpg(mpgVal)}</div></div>
+    <div class="dc wide"><div class="dl">Rendimiento</div><div class="dv">${fmtMpd(mpdVal)}</div></div>
+    <div class="dc wide"><div class="dl">Costo por distancia</div><div class="dv">${fmtCpp(e.paid,e.trip)}</div></div>`:''}
+  </div>`;
+  if(e.note) html+=`<div class="note-row">📍 ${e.note}</div>`;
+  html+=`<button class="del-btn" onclick="deleteEntry(${e.id})">🗑 Eliminar este registro</button>`;
+
+  document.getElementById('detail-content').innerHTML=html;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-detail').classList.add('active');
+}
+
+function deleteEntry(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  state.entries=state.entries.filter(e=>e.id!==id);
+  persist(); goTo('screen-home');
+}
+
+// ── Init ──────────────────────────────────────────────────
+setupMileageHint('f-mileage','mileage-hint');
+setupMileageHint('st-mileage','st-mileage-hint');
+
+if(!state.setup){ initSetup(); goTo('screen-setup'); }
+else { goTo('screen-home'); }
 </script>
 </body>
 </html>
