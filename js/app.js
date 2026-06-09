@@ -14,7 +14,10 @@ function goTo(id){
   if(id==='screen-form') initForm();
   if(id==='screen-status') initStatus();
   if(id==='screen-settings') initSettings();
+  if(id==='screen-chart') initChart();
 }
+
+function initChart(){ renderPriceChart('chart-price'); }
 
 // ── Helpers ───────────────────────────────────────────────
 function getLastOdo(){

@@ -1,4 +1,4 @@
-const CACHE = 'mi-tanque-v7';
+const CACHE = 'mi-tanque-v8';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -6,6 +6,7 @@ const ASSETS = [
   './js/storage.js',
   './js/gauge.js',
   './js/stats.js',
+  './js/chart.js',
   './js/app.js',
 ];
 
