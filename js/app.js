@@ -46,6 +46,110 @@ function saveSettings(){
 }
 function resetAll(){ if(!confirm('¿Borrar todos los datos?')) return; state={entries:[],setup:null}; persist(); location.reload(); }
 
+// ── CSV Export ────────────────────────────────────────────
+function exportCSV(){
+  const header='type,date,ts,odoValue,trip,fuel,fuelMode,paid,level,note';
+  const esc=v=>v==null?'':String(v).includes(',')? '"'+String(v).replace(/"/g,'""')+'"' :String(v);
+  const rows=[header];
+  if(state.setup){
+    rows.push(['setup',
+      '', state.setup.odo||'', state.setup.odo||'', '',
+      state.setup.capacity||'', '', '', state.setup.level??'', ''
+    ].map(esc).join(','));
+  }
+  state.entries.slice().sort((a,b)=>a.ts-b.ts).forEach(e=>{
+    rows.push([e.type, e.date, e.ts, e.odoValue??'', e.trip??'',
+      e.fuel??'', e.fuelMode??'', e.paid??'', e.level??'', e.note??''
+    ].map(esc).join(','));
+  });
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const today=new Date().toISOString().slice(0,10);
+  a.href=url; a.download=`mi-tanque-${today}.csv`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── CSV Import ────────────────────────────────────────────
+function importCSV(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const lines=ev.target.result.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2){ alert('CSV vacío o inválido.'); return; }
+
+    const cols=lines[0].split(',');
+    const idx=k=>cols.indexOf(k);
+    const iType=idx('type'), iDate=idx('date'), iTs=idx('ts');
+    const iOdo=idx('odoValue'), iTrip=idx('trip'), iFuel=idx('fuel');
+    const iFuelMode=idx('fuelMode'), iPaid=idx('paid'), iLevel=idx('level'), iNote=idx('note');
+
+    function parseRow(line){
+      const parts=[]; let cur='', inQ=false;
+      for(const ch of line){
+        if(ch==='"'){ inQ=!inQ; }
+        else if(ch===','&&!inQ){ parts.push(cur); cur=''; }
+        else { cur+=ch; }
+      }
+      parts.push(cur);
+      return parts;
+    }
+
+    const entries=[], setupRow=null;
+    let parseErr=false;
+    for(let i=1;i<lines.length;i++){
+      const p=parseRow(lines[i]);
+      const type=p[iType]?.trim();
+      if(!type) continue;
+      if(type==='setup'){
+        setupRow={
+          odo:parseFloat(p[iTs])||parseFloat(p[iOdo])||null,
+          capacity:parseFloat(p[iFuel])||null,
+          level:parseFloat(p[iLevel])??0.5
+        };
+        continue;
+      }
+      if(type!=='fuel'&&type!=='status'){ parseErr=true; continue; }
+      const ts=parseInt(p[iTs]);
+      if(!ts||isNaN(ts)){ parseErr=true; continue; }
+      entries.push({
+        id:ts, type,
+        date:p[iDate]?.trim()||new Date(ts).toLocaleDateString('es-SV',{day:'2-digit',month:'short',year:'numeric'}),
+        ts,
+        mileage:parseFloat(p[iOdo])||null,
+        odoValue:parseFloat(p[iOdo])||null,
+        trip:parseFloat(p[iTrip])||null,
+        fuel:parseFloat(p[iFuel])||null,
+        fuelMode:p[iFuelMode]?.trim()||'gallons',
+        paid:parseFloat(p[iPaid])||null,
+        level:p[iLevel]!==''?parseFloat(p[iLevel]):null,
+        note:p[iNote]?.trim()||'',
+        isOdo:true
+      });
+    }
+
+    const mode=state.entries.length
+      ? confirm('¿Reemplazar todos los datos actuales con el CSV?\n\nOK = Reemplazar\nCancelar = Agregar a los existentes')
+      : true;
+
+    if(mode){
+      state.entries=entries;
+      if(setupRow) state.setup=setupRow;
+    } else {
+      const existingTs=new Set(state.entries.map(e=>e.ts));
+      entries.forEach(e=>{ if(!existingTs.has(e.ts)) state.entries.push(e); });
+      state.entries.sort((a,b)=>b.ts-a.ts);
+    }
+
+    persist();
+    input.value='';
+    if(parseErr) alert('Importación completada con algunas filas ignoradas (tipo desconocido).');
+    goTo('screen-home');
+  };
+  reader.readAsText(file);
+}
+
 // ── Form: Carga ───────────────────────────────────────────
 let fuelMode='gallons';
 let formGauge=null;

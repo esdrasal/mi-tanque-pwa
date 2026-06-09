@@ -49,7 +49,7 @@
 <!-- HOME -->
 <div class="screen" id="screen-home">
   <div class="topbar">
-    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v1.0</span></h1>
+    <h1>⛽ Mi Tanque <span style="font-size:11px;font-weight:400;color:var(--text3);margin-left:4px">v1.1</span></h1>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-chart')" aria-label="Gráfico">📈</button>
     <button style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)" onclick="goTo('screen-settings')" aria-label="Ajustes">⚙️</button>
   </div>
@@ -151,7 +151,19 @@
       <input type="number" id="set-cap" inputmode="decimal" min="0" step="0.1">
     </div>
     <button class="save-btn" onclick="saveSettings()">Guardar</button>
-    <div style="margin-top:12px">
+
+    <div class="section-divider"></div>
+    <div class="sec-title">Datos</div>
+
+    <button class="save-btn" style="background:var(--info);margin-bottom:10px" onclick="exportCSV()">⬇️ Exportar CSV</button>
+
+    <div class="form-group" style="margin-bottom:10px">
+      <div class="form-label">Importar CSV</div>
+      <input type="file" id="import-file" accept=".csv" style="display:none" onchange="importCSV(this)">
+      <button class="save-btn" style="background:var(--bg2);color:var(--text);border:1px solid var(--border2)" onclick="document.getElementById('import-file').click()">⬆️ Seleccionar archivo CSV</button>
+    </div>
+
+    <div style="margin-top:4px">
       <button class="del-btn" onclick="resetAll()">🗑 Borrar todos los datos</button>
     </div>
   </div>
